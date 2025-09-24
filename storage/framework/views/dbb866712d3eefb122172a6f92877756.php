@@ -72,9 +72,16 @@
                         </div>
                     </div>
                     <div class="card-footer bg-white d-flex justify-content-end gap-2">
+                        
+                        <a href="<?php echo e(route('admin.users.show', $user->id)); ?>" class="btn btn-sm btn-info text-white">
+                            <i class="bi bi-person-lines-fill"></i> Detail
+                        </a>
+
+                        
                         <a href="<?php echo e(route('admin.users.edit', $user->id)); ?>" class="btn btn-sm btn-warning">
                             <i class="bi bi-pencil-square"></i> Edit
                         </a>
+
                         
                         <form action="<?php echo e(route('admin.users.destroy', $user->id)); ?>" method="POST"
                             onsubmit="return confirm('Anda yakin ingin menghapus user ini? Semua laporan yang terkait akan ikut terhapus.');">

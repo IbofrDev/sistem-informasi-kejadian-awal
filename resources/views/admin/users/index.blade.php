@@ -69,10 +69,17 @@
                         </div>
                     </div>
                     <div class="card-footer bg-white d-flex justify-content-end gap-2">
+                        {{-- Tombol Detail --}}
+                        <a href="{{ route('admin.users.show', $user->id) }}" class="btn btn-sm btn-info text-white">
+                            <i class="bi bi-person-lines-fill"></i> Detail
+                        </a>
+
+                        {{-- Tombol Edit --}}
                         <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-warning">
                             <i class="bi bi-pencil-square"></i> Edit
                         </a>
-                        {{-- Form untuk tombol Hapus --}}
+
+                        {{-- Tombol Hapus --}}
                         <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST"
                             onsubmit="return confirm('Anda yakin ingin menghapus user ini? Semua laporan yang terkait akan ikut terhapus.');">
                             @csrf
