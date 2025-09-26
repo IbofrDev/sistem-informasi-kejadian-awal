@@ -42,6 +42,9 @@ Route::middleware('auth')->group(function () {
 
     // Rute CRUD Laporan untuk Pelapor
     Route::resource('laporan', LaporanKejadianController::class);
+    Route::get('/laporan/{laporan}/print', [LaporanKejadianController::class, 'print'])
+    ->middleware('auth')
+    ->name('laporan.print');
 });
 
 // Grup Rute KHUSUS untuk Admin

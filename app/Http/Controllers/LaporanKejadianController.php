@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\LaporanKejadian;
 use App\Models\Lampiran;
+use Barryvdh\DomPDF\Facade\Pdf;   // ✅ Import DomPDF facade
 
 class LaporanKejadianController extends Controller
 {
@@ -23,33 +23,33 @@ class LaporanKejadianController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'nama_pelapor' => 'required|string|max:255',
-            'jabatan_pelapor' => 'required|string|max:255',
-            'telepon_pelapor' => 'required|string|max:20',
-            'jenis_kapal' => 'required|string|max:255',
-            'nama_kapal' => 'required|string|max:255',
-            'nama_kapal_kedua' => 'nullable|string|max:255',
-            'bendera_kapal' => 'required|string|max:100',
-            'grt_kapal' => 'required|integer',
-            'imo_number' => 'nullable|string|max:100',
-            'pelabuhan_asal' => 'required|string|max:255',
-            'waktu_berangkat' => 'required|date',
-            'pelabuhan_tujuan' => 'required|string|max:255',
-            'estimasi_tiba' => 'required|date',
-            'pemilik_kapal' => 'required|string|max:255',
-            'kontak_pemilik' => 'required|string|max:20',
-            'agen_lokal' => 'required|string|max:255',
-            'kontak_agen' => 'required|string|max:20',
-            'nama_pandu' => 'nullable|string|max:255',
-            'nomor_register_pandu' => 'nullable|string|max:255',
-            'jenis_muatan' => 'required|string',
-            'jumlah_muatan' => 'required|string|max:100',
-            'jumlah_penumpang' => 'required|integer',
-            'posisi_lintang' => 'required|string|max:50',
-            'posisi_bujur' => 'required|string|max:50',
-            'tanggal_laporan' => 'required|date',
-            'isi_laporan' => 'required|string',
-            'lampiran.*' => 'nullable|file|mimes:jpg,jpeg,png,mp4,mov,avi,webm|max:20480',
+            'nama_pelapor'        => 'required|string|max:255',
+            'jabatan_pelapor'     => 'required|string|max:255',
+            'telepon_pelapor'     => 'required|string|max:20',
+            'jenis_kapal'         => 'required|string|max:255',
+            'nama_kapal'          => 'required|string|max:255',
+            'nama_kapal_kedua'    => 'nullable|string|max:255',
+            'bendera_kapal'       => 'required|string|max:100',
+            'grt_kapal'           => 'required|integer',
+            'imo_number'          => 'nullable|string|max:100',
+            'pelabuhan_asal'      => 'required|string|max:255',
+            'waktu_berangkat'     => 'required|date',
+            'pelabuhan_tujuan'    => 'required|string|max:255',
+            'estimasi_tiba'       => 'required|date',
+            'pemilik_kapal'       => 'required|string|max:255',
+            'kontak_pemilik'      => 'required|string|max:20',
+            'agen_lokal'          => 'required|string|max:255',
+            'kontak_agen'         => 'required|string|max:20',
+            'nama_pandu'          => 'nullable|string|max:255',
+            'nomor_register_pandu'=> 'nullable|string|max:255',
+            'jenis_muatan'        => 'required|string',
+            'jumlah_muatan'       => 'required|string|max:100',
+            'jumlah_penumpang'    => 'required|integer',
+            'posisi_lintang'      => 'required|string|max:50',
+            'posisi_bujur'        => 'required|string|max:50',
+            'tanggal_laporan'     => 'required|date',
+            'isi_laporan'         => 'required|string',
+            'lampiran.*'          => 'nullable|file|mimes:jpg,jpeg,png,mp4,mov,avi,webm|max:20480',
         ]);
 
         $dataToStore = $validatedData;
@@ -57,14 +57,15 @@ class LaporanKejadianController extends Controller
 
         $laporan = LaporanKejadian::create($dataToStore);
 
+        // Simpan lampiran jika ada
         if ($request->hasFile('lampiran')) {
             foreach ($request->file('lampiran') as $file) {
                 $path = $file->store('lampiran', 'public');
                 $tipe = str_starts_with($file->getMimeType(), 'image') ? 'foto' : 'video';
                 Lampiran::create([
                     'laporan_id' => $laporan->id,
-                    'tipe_file' => $tipe,
-                    'path_file' => $path,
+                    'tipe_file'  => $tipe,
+                    'path_file'  => $path,
                 ]);
             }
         }
@@ -73,72 +74,84 @@ class LaporanKejadianController extends Controller
     }
 
     /**
-     * Menampilkan detail dari satu laporan spesifik.
+     * Menampilkan detail laporan.
      */
     public function show(LaporanKejadian $laporan)
     {
         $this->authorize('view', $laporan);
         $laporan->load('lampiran');
-        return view('laporan.show', ['laporan' => $laporan]);
+        return view('laporan.show', compact('laporan'));
     }
 
     /**
-     * Menampilkan form untuk mengedit laporan.
+     * Menampilkan form edit laporan.
      */
     public function edit(LaporanKejadian $laporan)
     {
         $this->authorize('update', $laporan);
-        return view('laporan.edit', ['laporan' => $laporan]);
+        return view('laporan.edit', compact('laporan'));
     }
 
     /**
-     * Memperbarui laporan di database.
+     * Update data laporan.
      */
     public function update(Request $request, LaporanKejadian $laporan)
     {
         $this->authorize('update', $laporan);
 
         $validatedData = $request->validate([
-            'nama_pelapor' => 'required|string|max:255',
-            'jabatan_pelapor' => 'required|string|max:255',
-            'telepon_pelapor' => 'required|string|max:20',
-            'jenis_kapal' => 'required|string|max:255',
-            'nama_kapal' => 'required|string|max:255',
-            'nama_kapal_kedua' => 'nullable|string|max:255',
-            'bendera_kapal' => 'required|string|max:100',
-            'grt_kapal' => 'required|integer',
-            'imo_number' => 'nullable|string|max:100',
-            'pelabuhan_asal' => 'required|string|max:255',
-            'waktu_berangkat' => 'required|date',
-            'pelabuhan_tujuan' => 'required|string|max:255',
-            'estimasi_tiba' => 'required|date',
-            'pemilik_kapal' => 'required|string|max:255',
-            'kontak_pemilik' => 'required|string|max:20',
-            'agen_lokal' => 'required|string|max:255',
-            'kontak_agen' => 'required|string|max:20',
-            'nama_pandu' => 'nullable|string|max:255',
-            'nomor_register_pandu' => 'nullable|string|max:255',
-            'jenis_muatan' => 'required|string',
-            'jumlah_muatan' => 'required|string|max:100',
-            'jumlah_penumpang' => 'required|integer',
-            'posisi_lintang' => 'required|string|max:50',
-            'posisi_bujur' => 'required|string|max:50',
-            'tanggal_laporan' => 'required|date',
-            'isi_laporan' => 'required|string',
+            'nama_pelapor'        => 'required|string|max:255',
+            'jabatan_pelapor'     => 'required|string|max:255',
+            'telepon_pelapor'     => 'required|string|max:20',
+            'jenis_kapal'         => 'required|string|max:255',
+            'nama_kapal'          => 'required|string|max:255',
+            'nama_kapal_kedua'    => 'nullable|string|max:255',
+            'bendera_kapal'       => 'required|string|max:100',
+            'grt_kapal'           => 'required|integer',
+            'imo_number'          => 'nullable|string|max:100',
+            'pelabuhan_asal'      => 'required|string|max:255',
+            'waktu_berangkat'     => 'required|date',
+            'pelabuhan_tujuan'    => 'required|string|max:255',
+            'estimasi_tiba'       => 'required|date',
+            'pemilik_kapal'       => 'required|string|max:255',
+            'kontak_pemilik'      => 'required|string|max:20',
+            'agen_lokal'          => 'required|string|max:255',
+            'kontak_agen'         => 'required|string|max:20',
+            'nama_pandu'          => 'nullable|string|max:255',
+            'nomor_register_pandu'=> 'nullable|string|max:255',
+            'jenis_muatan'        => 'required|string',
+            'jumlah_muatan'       => 'required|string|max:100',
+            'jumlah_penumpang'    => 'required|integer',
+            'posisi_lintang'      => 'required|string|max:50',
+            'posisi_bujur'        => 'required|string|max:50',
+            'tanggal_laporan'     => 'required|date',
+            'isi_laporan'         => 'required|string',
         ]);
-        
+
         $laporan->update($validatedData);
 
         return redirect()->route('dashboard')->with('success', 'Laporan berhasil diperbarui!');
     }
 
     /**
-     * Menghapus laporan dari database.
+     * Hapus laporan.
      */
     public function destroy(LaporanKejadian $laporan)
     {
         $this->authorize('delete', $laporan);
         $laporan->delete();
         return redirect()->route('dashboard')->with('success', 'Laporan berhasil dihapus.');
+    }
+
+    /**
+     * 🔹 Cetak laporan ke PDF.
+     */
+    public function print(LaporanKejadian $laporan)
+    {
+        $this->authorize('view', $laporan);
+
+        $pdf = Pdf::loadView('laporan.pdf', ['laporan' => $laporan]);
+
+        return $pdf->stream('laporan-kejadian-' . $laporan->id . '.pdf');
     }
 }

@@ -498,13 +498,14 @@
             <div class="row align-items-center">
                 <div class="col-md-7">
                     <h3>KSOP</h3>
-                    <p>
-                        Alamat : Jl. Kuin Selatan Banjarmasin 70128, Indonesia <br>
-                        Operating hours: 24 Hours <br>
-                        Telephone: 14005 <br>
-                        Fax: (+6221) 79183947 <br>
-                        E-mail: info@QCIndonesia.com
-                    </p>
+                    <ul class="list-unstyled footer-contact">
+                        <li><strong>Alamat:</strong> Jl. Duyung Raya, Telaga Biru, Kec. Banjarmasin Barat,</li>
+                        <li>Kota Banjarmasin, Kalimantan Selatan 70117</li>
+                        <li><strong>Jam Operasional:</strong> 24 Jam</li>
+                        <li><strong>Telepon:</strong> 14005</li>
+                        <li><strong>Fax:</strong> (+6221) 79183947</li>
+                        <li><strong>Email:</strong> info@QCIndonesia.com</li>
+                    </ul>
                 </div>
             </div>
             <hr class="my-4">

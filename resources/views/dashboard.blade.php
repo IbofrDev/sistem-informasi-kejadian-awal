@@ -8,8 +8,9 @@
     <div class="card shadow-sm mb-4">
         <div class="card-body p-4">
             <h4 class="card-title">Selamat Datang, {{ Auth::user()->name }}!</h4>
-            <p class="card-text text-muted">Di sini Anda dapat melihat riwayat laporan yang telah Anda buat dan mengelola laporan Anda.</p>
-            <a href="{{ route('laporan.create') }}" class="btn btn-primary">
+            <p class="card-text text-muted">Di sini Anda dapat melihat riwayat laporan yang telah Anda buat dan mengelola
+                laporan Anda.</p>
+            <a href="{{ route('laporan.create') }}" class="btn btn-warning">
                 <i class="bi bi-plus-circle-fill me-2"></i>Buat Laporan Baru
             </a>
         </div>
@@ -47,16 +48,26 @@
                                         <span class="badge bg-secondary">{{ ucfirst($laporan->status_laporan) }}</span>
                                     @endif
                                 </td>
-                                <td class="text-center">
-                                    <a href="{{ route('laporan.show', $laporan->id) }}" class="btn btn-sm btn-info" title="Lihat Detail">
+                                <td class="text-center d-flex justify-content-center gap-1">
+                                    {{-- Tombol Detail --}}
+                                    <a href="{{ route('laporan.show', $laporan->id) }}" class="btn btn-sm btn-info"
+                                        title="Lihat Detail">
                                         <i class="bi bi-eye-fill"></i>
                                     </a>
-                                    {{-- Tombol Edit hanya muncul jika status belum selesai --}}
+
+                                    {{-- Tombol Edit (kalau belum selesai) --}}
                                     @if($laporan->status_laporan != 'selesai')
-                                    <a href="{{ route('laporan.edit', $laporan->id) }}" class="btn btn-sm btn-warning" title="Edit Laporan">
-                                        <i class="bi bi-pencil-fill"></i>
-                                    </a>
+                                        <a href="{{ route('laporan.edit', $laporan->id) }}" class="btn btn-sm btn-warning"
+                                            title="Edit Laporan">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </a>
                                     @endif
+
+                                    {{-- 🔹 Tombol Cetak PDF --}}
+                                    <a href="{{ route('laporan.print', $laporan->id) }}" class="btn btn-sm btn-secondary"
+                                        title="Cetak PDF">
+                                        <i class="bi bi-printer-fill"></i>
+                                    </a>
                                 </td>
                             </tr>
                         @empty
@@ -64,7 +75,8 @@
                             <tr>
                                 <td colspan="4" class="text-center py-4">
                                     <p class="mb-2">Anda belum membuat laporan apapun.</p>
-                                    <a href="{{ route('laporan.create') }}" class="btn btn-sm btn-primary">Buat Laporan Pertama Anda</a>
+                                    <a href="{{ route('laporan.create') }}" class="btn btn-sm btn-warning">Buat Laporan Pertama
+                                        Anda</a>
                                 </td>
                             </tr>
                         @endforelse
@@ -73,4 +85,5 @@
             </div>
         </div>
     </div>
+
 @endsection
