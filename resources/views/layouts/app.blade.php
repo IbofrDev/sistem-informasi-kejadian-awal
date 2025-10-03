@@ -99,22 +99,6 @@
             </header>
 
             <div class="container-fluid p-4">
-
-                {{-- 🔔 Flash Messages --}}
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                        {{ session('error') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                @endif
-
                 {{-- Konten Halaman --}}
                 @yield('content')
             </div>
@@ -133,7 +117,6 @@
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
 
-                // Ambil custom title & message jika ada
                 let title = form.getAttribute('data-title') || 'Yakin ingin menghapus?';
                 let message = form.getAttribute('data-message') || "Data yang dihapus tidak bisa dikembalikan.";
 
@@ -155,6 +138,33 @@
         });
     });
     </script>
-</body>
 
+    {{-- SweetAlert2 untuk Flash Message dinamis --}}
+    @if(session('success'))
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            Swal.fire({
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                icon: "{{ session('swal_icon') ?? 'success' }}", 
+                confirmButtonText: 'OK'
+            });
+        });
+      </script>
+    @endif
+
+    @if(session('error'))
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            Swal.fire({
+                title: 'Oops!',
+                text: "{{ session('error') }}",
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        });
+      </script>
+    @endif
+
+</body>
 </html>

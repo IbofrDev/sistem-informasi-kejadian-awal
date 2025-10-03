@@ -7,8 +7,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\LaporanKejadian;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -21,42 +19,30 @@ class DashboardController extends Controller
         $selectedStatus = $request->query('status');
 
         // ======== LOGIKA UNTUK TABEL LAPORAN ========
-        // Query dasar untuk mengambil data laporan
         $laporanQuery = LaporanKejadian::query()->with('user');
 
-        // Jika ada status yang dipilih, filter query-nya
         if ($selectedStatus) {
             $laporanQuery->where('status_laporan', $selectedStatus);
         }
 
-        // Ambil data untuk tabel dengan paginasi, urutkan dari yang terbaru
-        // withQueryString() berfungsi agar filter status tidak hilang saat berpindah halaman
         $semuaLaporan = $laporanQuery->latest('tanggal_laporan')
             ->paginate(10)
             ->withQueryString();
 
-        // ======== LOGIKA BARU UNTUK KARTU STATISTIK DINAMIS ========
+        // ======== LOGIKA UNTUK KARTU STATISTIK DINAMIS ========
         if (!$selectedStatus) {
-            // JIKA TIDAK ADA FILTER (Tampilan "Semua")
-            // Hitung semua statistik secara global
             $totalLaporan = LaporanKejadian::count();
             $laporanBaru = LaporanKejadian::where('status_laporan', 'dikirim')->count();
             $perluVerifikasi = LaporanKejadian::where('status_laporan', 'diverifikasi')->count();
             $laporanSelesai = LaporanKejadian::where('status_laporan', 'selesai')->count();
         } else {
-            // JIKA ADA FILTER STATUS YANG AKTIF
-            // Atur semua hitungan ke 0 terlebih dahulu
             $laporanBaru = 0;
             $perluVerifikasi = 0;
             $laporanSelesai = 0;
 
-            // Hitung jumlah laporan hanya untuk status yang sedang difilter
             $filteredCount = LaporanKejadian::where('status_laporan', $selectedStatus)->count();
-
-            // Atur kartu "Total Laporan" agar menampilkan jumlah yang difilter
             $totalLaporan = $filteredCount;
 
-            // Perbarui nilai untuk kartu yang sesuai dengan filter yang aktif
             switch ($selectedStatus) {
                 case 'dikirim':
                     $laporanBaru = $filteredCount;
@@ -70,7 +56,6 @@ class DashboardController extends Controller
             }
         }
 
-        // Kirim semua variabel yang sudah dihitung ke view
         return view('admin.dashboard', [
             'totalLaporan' => $totalLaporan,
             'laporanBaru' => $laporanBaru,
@@ -81,19 +66,14 @@ class DashboardController extends Controller
         ]);
     }
 
-
     /**
-     * Menampilkan detail dari satu laporan spesifik untuk admin.
+     * Menampilkan detail laporan spesifik.
      */
     public function show(LaporanKejadian $laporan)
     {
-        // Eager load relasi lampiran dan user (pelapor)
         $laporan->load('lampiran', 'user');
-
-        // Ambil data user dari relasi
         $pelapor = $laporan->user;
 
-        // Kirim kedua variabel ('laporan' dan 'pelapor') ke view
         return view('admin.detail', [
             'laporan' => $laporan,
             'pelapor' => $pelapor
@@ -109,12 +89,29 @@ class DashboardController extends Controller
         $laporan->status_laporan = $request->input('status');
         $laporan->save();
 
-        // Redirect kembali ke halaman sebelumnya untuk menjaga filter tetap aktif
-        return back()->with('success', 'Status laporan berhasil diperbarui.');
+        $status = $laporan->status_laporan;
+        $message = "Status laporan berhasil diperbarui.";
+        $icon = "success"; // default ikon
+
+        if ($status === 'diverifikasi') {
+            $message = "Laporan berhasil diverifikasi.";
+            $icon = "warning"; // ⚠️ warna kuning
+        } elseif ($status === 'selesai') {
+            $message = "Laporan telah selesai diproses.";
+            $icon = "success"; // ✅ hijau
+        } elseif ($status === 'dikirim') {
+            $message = "Laporan telah dikirim.";
+            $icon = "info"; // ℹ️ biru
+        }
+
+        return back()->with([
+            'success' => $message,
+            'swal_icon' => $icon
+        ]);
     }
 
     /**
-     * Menghapus laporan dari database (Admin).
+     * Menghapus laporan.
      */
     public function destroy(LaporanKejadian $laporan)
     {
@@ -123,11 +120,13 @@ class DashboardController extends Controller
             \Illuminate\Support\Facades\Storage::disk('public')->delete($file->path_file);
         }
         $laporan->delete();
-        return redirect()->route('admin.dashboard')->with('success', 'Laporan dan semua file lampirannya berhasil dihapus.');
+
+        return redirect()->route('admin.dashboard')
+            ->with('success', 'Laporan dan semua file lampirannya berhasil dihapus.');
     }
 
     /**
-     * Menampilkan daftar semua pengguna dengan peran 'pelapor'.
+     * Menampilkan daftar user pelapor.
      */
     public function listReporters()
     {
@@ -140,7 +139,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Menampilkan detail semua laporan dari satu pelapor.
+     * Menampilkan detail semua laporan milik user pelapor tertentu.
      */
     public function showReporterDetails(User $user)
     {
@@ -155,14 +154,11 @@ class DashboardController extends Controller
     }
 
     /**
-     * Membuat dan menampilkan laporan dalam format PDF.
+     * Export laporan ke PDF.
      */
     public function printPDF(LaporanKejadian $laporan)
     {
-        // Muat data ke dalam view PDF
         $pdf = Pdf::loadView('laporan.pdf', ['laporan' => $laporan]);
-
-        // Tampilkan PDF di browser
         return $pdf->stream('laporan-kejadian-' . $laporan->id . '.pdf');
     }
 }
