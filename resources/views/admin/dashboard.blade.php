@@ -117,8 +117,8 @@
                                         <span class="badge bg-secondary">{{ ucfirst($laporan->status_laporan) }}</span>
                                     @endif
                                 </td>
-<td class="text-center d-flex justify-content-center gap-1">
-    {{-- Dropdown untuk ubah status (Pindahkan ke paling kiri) --}}
+    <td class="text-center d-flex justify-content-center gap-1">
+    {{-- Dropdown untuk ubah status --}}
     <form action="{{ route('admin.laporan.updateStatus', $laporan->id) }}" method="POST" class="d-inline">
         @csrf
         @method('PATCH')
@@ -134,9 +134,18 @@
     <a href="{{ route('admin.laporan.show', $laporan->id) }}" class="btn btn-sm btn-info"
        title="Detail"><i class="bi bi-eye-fill"></i></a>
 
-    {{-- Tombol Cetak --}}
+    {{-- Tombol Cetak PDF --}}
     <a href="{{ route('admin.laporan.print', $laporan->id) }}" class="btn btn-sm btn-secondary"
        title="Cetak PDF"><i class="bi bi-printer-fill"></i></a>
+
+    {{-- Tombol Hapus (pakai class form-delete agar pakai SweetAlert) --}}
+    <form action="{{ route('admin.laporan.destroy', $laporan->id) }}" method="POST" class="d-inline form-delete">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+            <i class="bi bi-trash"></i>
+        </button>
+    </form>
 </td>
 
                             </tr>

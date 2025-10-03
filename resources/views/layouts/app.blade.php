@@ -23,7 +23,8 @@
 <body class="bg-light">
 
     <div class="d-flex">
-        <nav class="sidebar vh-100 text-white p-3 shadow-sm" style="width: 280px; position: fixed; background: linear-gradient(to bottom, #28166F, #120A30);">
+        <nav class="sidebar vh-100 text-white p-3 shadow-sm"
+            style="width: 280px; position: fixed; background: linear-gradient(to bottom, #28166F, #120A30);">
             <a href="/" class="d-flex align-items-center mb-4 text-white text-decoration-none">
                 <img src="{{ asset('images/logo_ksop.png') }}" alt="Logo KSOP" style="width: 40px; height: auto;"
                     class="me-3">
@@ -45,7 +46,6 @@
                         </a>
                     </li>
                     <li class="nav-item mb-1">
-                        {{-- MODIFIKASI PADA BARIS DI BAWAH INI --}}
                         <a href="{{ route('admin.users.index') }}"
                             class="nav-link text-white {{ request()->routeIs('admin.users.index') ? 'active' : '' }}">
                             <i class="bi bi-people-fill me-2"></i> <strong>Kelola User</strong>
@@ -99,12 +99,62 @@
             </header>
 
             <div class="container-fluid p-4">
+
+                {{-- 🔔 Flash Messages --}}
+                @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                {{-- Konten Halaman --}}
                 @yield('content')
             </div>
         </main>
     </div>
     @stack('scripts')
 
+    {{-- SweetAlert2 --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    {{-- Script Global Confirm Delete --}}
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteForms = document.querySelectorAll('.form-delete');
+        deleteForms.forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                // Ambil custom title & message jika ada
+                let title = form.getAttribute('data-title') || 'Yakin ingin menghapus?';
+                let message = form.getAttribute('data-message') || "Data yang dihapus tidak bisa dikembalikan.";
+
+                Swal.fire({
+                    title: title,
+                    text: message,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+    </script>
 </body>
 
 </html>

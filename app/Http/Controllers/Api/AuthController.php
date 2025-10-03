@@ -7,34 +7,27 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator; // Ditambahkan untuk validasi
-use Illuminate\Validation\Rule; // Ditambahkan untuk validasi unique
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
     /**
      * Handle a login request to the API.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
      */
     public function login(Request $request)
     {
-        // 1. Validasi input
         $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        // 2. Coba untuk mengautentikasi pengguna
         if (Auth::attempt($credentials)) {
             /** @var \App\Models\User $user */
             $user = Auth::user();
 
-            // 3. Buat token API baru untuk pengguna
             $token = $user->createToken('auth_token')->plainTextToken;
 
-            // 4. Kembalikan data pengguna dan token sebagai respons
             return response()->json([
                 'message' => 'Login berhasil',
                 'access_token' => $token,
@@ -43,10 +36,9 @@ class AuthController extends Controller
             ]);
         }
 
-        // 5. Jika gagal, kembalikan pesan error
         return response()->json([
             'message' => 'Email atau password salah.'
-        ], 401); // 401 Unauthorized
+        ], 401);
     }
 
     /**
@@ -58,7 +50,7 @@ class AuthController extends Controller
             'nama' => 'required|string|max:255',
             'jabatan' => 'required|string|max:255',
             'jenis_kapal' => 'required|string|max:255',
-            'phone_number' => 'required|string|max:20',
+            'phone_number' => 'required|string|max:20|unique:users',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
         ]);
@@ -84,38 +76,53 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle a profile update request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * Handle profile update + optional password change.
      */
     public function updateProfile(Request $request)
     {
-        // 1. Ambil data pengguna yang sedang login
         $user = $request->user();
 
-        // 2. Validasi input dari form edit profil
-        // Perhatikan `Rule::unique('users')->ignore($user->id)`
-        // Ini memastikan validasi unik tidak gagal karena data milik pengguna itu sendiri.
+        // Validasi input profil + password opsional
         $validator = Validator::make($request->all(), [
             'nama' => 'required|string|max:255',
             'jenis_kapal' => 'required|string|max:255',
             'phone_number' => ['nullable', 'string', 'max:20', Rule::unique('users')->ignore($user->id)],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+
+            // password opsional
+            'current_password' => 'nullable|required_with:new_password|string',
+            'new_password' => 'nullable|min:6|confirmed', // otomatis cek new_password_confirmation
+        ], [
+            'current_password.required_with' => 'Password lama wajib diisi jika ingin mengganti password.',
+            'new_password.min' => 'Password baru minimal 6 karakter.',
+            'new_password.confirmed' => 'Konfirmasi password baru tidak cocok.'
         ]);
 
-        // Jika validasi gagal, kembalikan error
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422); // 422 Unprocessable Entity
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // 3. Update data pengguna dengan data yang sudah divalidasi
-        $user->update($validator->validated());
+        // Update data profil
+        $user->nama = $request->nama;
+        $user->email = $request->email;
+        $user->phone_number = $request->phone_number;
+        $user->jenis_kapal = $request->jenis_kapal;
 
-        // 4. Kembalikan respons sukses dengan data pengguna yang baru
+        // Jika user ingin ganti password
+        if ($request->filled('new_password')) {
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json([
+                    'errors' => ['current_password' => ['Password lama salah']]
+                ], 422);
+            }
+            $user->password = Hash::make($request->new_password);
+        }
+
+        $user->save();
+
         return response()->json([
             'message' => 'Profil berhasil diperbarui',
             'user' => $user
-        ], 200); // 200 OK
+        ], 200);
     }
 }
