@@ -10,26 +10,36 @@ use App\Models\User;
 
 class DashboardController extends Controller
 {
-    /**
-     * Menampilkan dashboard admin dengan semua laporan dan statistik dinamis.
-     */
     public function index(Request $request)
     {
-        // Ambil status yang dipilih dari URL, contoh: ?status=diverifikasi
         $selectedStatus = $request->query('status');
+        $search = $request->query('search');
 
-        // ======== LOGIKA UNTUK TABEL LAPORAN ========
         $laporanQuery = LaporanKejadian::query()->with('user');
 
+        // Filter status
         if ($selectedStatus) {
             $laporanQuery->where('status_laporan', $selectedStatus);
+        }
+
+        // Filter pencarian
+        if ($search) {
+            $laporanQuery->where(function ($query) use ($search) {
+                $query->where('id', 'LIKE', "%$search%")
+                      ->orWhere('nama_kapal', 'LIKE', "%$search%")
+                      ->orWhere('jenis_kapal', 'LIKE', "%$search%")
+                      ->orWhereDate('tanggal_laporan', $search)
+                      ->orWhereHas('user', function ($userQuery) use ($search) {
+                          $userQuery->where('nama', 'LIKE', "%$search%");
+                      });
+            });
         }
 
         $semuaLaporan = $laporanQuery->latest('tanggal_laporan')
             ->paginate(10)
             ->withQueryString();
 
-        // ======== LOGIKA UNTUK KARTU STATISTIK DINAMIS ========
+        // Statistik
         if (!$selectedStatus) {
             $totalLaporan = LaporanKejadian::count();
             $laporanBaru = LaporanKejadian::where('status_laporan', 'dikirim')->count();
@@ -63,56 +73,42 @@ class DashboardController extends Controller
             'laporanSelesai' => $laporanSelesai,
             'semuaLaporan' => $semuaLaporan,
             'selectedStatus' => $selectedStatus,
+            'search' => $search
         ]);
     }
 
-    /**
-     * Menampilkan detail laporan spesifik.
-     */
     public function show(LaporanKejadian $laporan)
     {
         $laporan->load('lampiran', 'user');
         $pelapor = $laporan->user;
 
-        return view('admin.detail', [
-            'laporan' => $laporan,
-            'pelapor' => $pelapor
-        ]);
+        return view('admin.detail', compact('laporan', 'pelapor'));
     }
 
-    /**
-     * Memperbarui status laporan.
-     */
     public function updateStatus(Request $request, LaporanKejadian $laporan)
     {
         $request->validate(['status' => 'required|string|in:dikirim,diverifikasi,selesai']);
-        $laporan->status_laporan = $request->input('status');
+        $laporan->status_laporan = $request->status;
         $laporan->save();
 
         $status = $laporan->status_laporan;
-        $message = "Status laporan berhasil diperbarui.";
-        $icon = "success"; // default ikon
+        $message = 'Status laporan berhasil diperbarui.';
+        $icon = 'success';
 
         if ($status === 'diverifikasi') {
-            $message = "Laporan berhasil diverifikasi.";
-            $icon = "warning"; // ⚠️ warna kuning
+            $message = 'Laporan berhasil diverifikasi.';
+            $icon = 'warning';
         } elseif ($status === 'selesai') {
-            $message = "Laporan telah selesai diproses.";
-            $icon = "success"; // ✅ hijau
+            $message = 'Laporan telah selesai diproses.';
+            $icon = 'success';
         } elseif ($status === 'dikirim') {
-            $message = "Laporan telah dikirim.";
-            $icon = "info"; // ℹ️ biru
+            $message = 'Laporan telah dikirim.';
+            $icon = 'info';
         }
 
-        return back()->with([
-            'success' => $message,
-            'swal_icon' => $icon
-        ]);
+        return back()->with(['success' => $message, 'swal_icon' => $icon]);
     }
 
-    /**
-     * Menghapus laporan.
-     */
     public function destroy(LaporanKejadian $laporan)
     {
         $laporan->load('lampiran');
@@ -125,9 +121,6 @@ class DashboardController extends Controller
             ->with('success', 'Laporan dan semua file lampirannya berhasil dihapus.');
     }
 
-    /**
-     * Menampilkan daftar user pelapor.
-     */
     public function listReporters()
     {
         $pelapor = User::where('role', 'pelapor')
@@ -138,9 +131,6 @@ class DashboardController extends Controller
         return view('admin.pelapor-list', ['pelapor' => $pelapor]);
     }
 
-    /**
-     * Menampilkan detail semua laporan milik user pelapor tertentu.
-     */
     public function showReporterDetails(User $user)
     {
         $laporanKejadian = $user->laporanKejadian()
@@ -153,9 +143,6 @@ class DashboardController extends Controller
         ]);
     }
 
-    /**
-     * Export laporan ke PDF.
-     */
     public function printPDF(LaporanKejadian $laporan)
     {
         $pdf = Pdf::loadView('laporan.pdf', ['laporan' => $laporan]);

@@ -5,10 +5,54 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\LaporanKejadian;
 use App\Models\Lampiran;
-use Barryvdh\DomPDF\Facade\Pdf;   // ✅ Import DomPDF facade
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 class LaporanKejadianController extends Controller
 {
+    /**
+     * 🔹 Menampilkan halaman dashboard pelapor dengan fitur filter bulan dan tahun.
+     */
+    public function index(Request $request)
+    {
+        // Ambil user yang login
+        $user = auth()->user();
+
+        // Ambil parameter filter dari URL: ?bulan=9&tahun=2025
+        $bulan = $request->query('bulan');
+        $tahun = $request->query('tahun');
+
+        // Ambil semua laporan user
+        $laporanQuery = LaporanKejadian::where('user_id', $user->id);
+
+        // Jika user memilih filter bulan dan tahun
+        if ($bulan && $tahun) {
+            $laporanQuery->whereMonth('tanggal_laporan', $bulan)
+                         ->whereYear('tanggal_laporan', $tahun);
+        } elseif ($bulan) {
+            $laporanQuery->whereMonth('tanggal_laporan', $bulan);
+        } elseif ($tahun) {
+            $laporanQuery->whereYear('tanggal_laporan', $tahun);
+        }
+
+        // Urutkan berdasarkan tanggal_laporan terbaru
+        $laporanKejadian = $laporanQuery->orderBy('tanggal_laporan', 'desc')->get();
+
+        // Dapatkan daftar tahun unik dari database (untuk dropdown filter)
+        $tahunList = LaporanKejadian::selectRaw('YEAR(tanggal_laporan) as tahun')
+            ->distinct()
+            ->orderBy('tahun', 'desc')
+            ->pluck('tahun');
+
+        // Render ke view dashboard
+        return view('dashboard', [
+            'laporanKejadian' => $laporanKejadian,
+            'bulan' => $bulan,
+            'tahun' => $tahun,
+            'tahunList' => $tahunList
+        ]);
+    }
+
     /**
      * Menampilkan form untuk membuat laporan baru.
      */
