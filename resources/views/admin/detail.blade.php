@@ -7,18 +7,29 @@
     {{-- Header Halaman dengan Tombol Aksi --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0 text-gray-800">Detail Laporan Kejadian</h1>
-        <div>
-            {{-- Tombol Cetak PDF (Ganti # dengan route yang sesuai) --}}
-           <a href="{{ route('admin.laporan.print', $laporan->id) }}" target="_blank" class="btn btn-success">
+        <div class="d-flex gap-2">
+            {{-- Tombol Cetak PDF --}}
+            <a href="{{ route('admin.laporan.print', $laporan->id) }}" target="_blank" class="btn btn-success">
                 <i class="bi bi-printer-fill me-1"></i> Cetak PDF
             </a>
+
+            {{-- Tombol Hapus (pakai class form-delete agar kena SweetAlert2 global) --}}
+            <form action="{{ route('admin.laporan.destroy', $laporan->id) }}" method="POST" class="d-inline form-delete">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash me-1"></i> Hapus
+                </button>
+            </form>
+
+            {{-- Tombol Kembali --}}
             <a href="{{ url()->previous() }}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Kembali
             </a>
         </div>
     </div>
 
-    {{-- Card Informasi Laporan, Pelapor, dan Kapal (Digabung) --}}
+    {{-- Card Informasi Laporan --}}
     <div class="card shadow-sm mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 fw-bold text-primary">Informasi Laporan</h6>
@@ -52,7 +63,6 @@
                     </tr>
                     <tr>
                         <td class="fw-bold">GRT</td>
-                        {{-- KESALAHAN ADA DI BARIS DI BAWAH INI --}}
                         <td>: {{ $laporan->grt_kapal ?? 'N/A' }}</td>
                     </tr>
                     <tr class="table-light">
@@ -84,7 +94,7 @@
         </div>
     </div>
 
-    {{-- Card Isi Laporan / Uraian --}}
+    {{-- Card Isi Laporan --}}
     <div class="card shadow-sm mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 fw-bold text-primary">Isi Laporan</h6>

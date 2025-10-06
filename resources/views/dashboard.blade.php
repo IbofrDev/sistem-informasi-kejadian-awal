@@ -16,6 +16,38 @@
         </div>
     </div>
 
+    {{-- Filter Bulan & Tahun --}}
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <form method="GET" action="{{ route('dashboard') }}" class="row g-3 align-items-end">
+                <div class="col-md-4 col-sm-6">
+                    <label for="bulan" class="form-label mb-1">Bulan</label>
+                    <select name="bulan" id="bulan" class="form-select form-select-sm">
+                        <option value="">Semua Bulan</option>
+                        @foreach(range(1, 12) as $b)
+                            <option value="{{ $b }}" {{ request('bulan') == $b ? 'selected' : '' }}>
+                                {{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <label for="tahun" class="form-label mb-1">Tahun</label>
+                    <select name="tahun" id="tahun" class="form-select form-select-sm">
+                        <option value="">Semua Tahun</option>
+                        @foreach($tahunList as $t)
+                            <option value="{{ $t }}" {{ request('tahun') == $t ? 'selected' : '' }}>{{ $t }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-4 col-sm-12 d-flex gap-2">
+                    <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-funnel-fill me-1"></i> Filter</button>
+                    <a href="{{ route('dashboard') }}" class="btn btn-sm btn-secondary"><i class="bi bi-x-circle me-1"></i> Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {{-- Tabel Riwayat Laporan --}}
     <div class="card shadow-sm">
         <div class="card-header">
@@ -23,11 +55,14 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover align-middle">
                     <thead>
                         <tr>
                             <th>ID Laporan</th>
                             <th>Tanggal Dibuat</th>
+                            <th>Tanggal Kejadian</th>
+                            <th>Jenis Kapal</th>
+                            <th>Nama Kapal</th>
                             <th>Status</th>
                             <th class="text-center">Aksi</th>
                         </tr>
@@ -38,6 +73,9 @@
                             <tr>
                                 <td>#{{ $laporan->id }}</td>
                                 <td>{{ $laporan->created_at->format('d M Y, H:i') }}</td>
+                                <td>{{ \Carbon\Carbon::parse($laporan->tanggal_laporan)->format('d M Y') }}</td>
+                                <td>{{ $laporan->jenis_kapal ?? '-' }}</td>
+                                <td>{{ $laporan->nama_kapal ?? '-' }}</td>
                                 <td>
                                     {{-- Badge status dengan warna berbeda --}}
                                     @if($laporan->status_laporan == 'diverifikasi')
@@ -73,10 +111,11 @@
                         @empty
                             {{-- Pesan jika tidak ada laporan --}}
                             <tr>
-                                <td colspan="4" class="text-center py-4">
-                                    <p class="mb-2">Anda belum membuat laporan apapun.</p>
-                                    <a href="{{ route('laporan.create') }}" class="btn btn-sm btn-warning">Buat Laporan Pertama
-                                        Anda</a>
+                                <td colspan="7" class="text-center py-4">
+                                    <p class="mb-2">Tidak ada laporan untuk bulan/tahun yang dipilih atau Anda belum membuat laporan.</p>
+                                    <a href="{{ route('laporan.create') }}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-plus-circle me-1"></i> Buat Laporan Pertama Anda
+                                    </a>
                                 </td>
                             </tr>
                         @endforelse

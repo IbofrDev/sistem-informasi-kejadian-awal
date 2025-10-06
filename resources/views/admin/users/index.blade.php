@@ -4,27 +4,14 @@
 @section('page-title', 'Daftar User')
 
 @section('content')
-    {{-- Notifikasi Sukses/Error --}}
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
 
     {{-- Form Pencarian --}}
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <form action="{{ route('admin.users.index') }}" method="GET" class="d-flex">
-                <input type="text" name="search" class="form-control me-2" placeholder="Cari berdasarkan nama atau email..."
-                    value="{{ request('search') }}">
+                <input type="text" name="search" class="form-control me-2"
+                       placeholder="Cari berdasarkan nama atau email..."
+                       value="{{ request('search') }}">
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-search"></i> <span class="d-none d-sm-inline">Cari</span>
                 </button>
@@ -41,7 +28,7 @@
                             {{-- Avatar Inisial Nama --}}
                             <div class="flex-shrink-0 me-3">
                                 <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 50px; height: 50px;">
+                                     style="width: 50px; height: 50px;">
                                     <span class="fw-bold fs-5">{{ strtoupper(substr($user->nama, 0, 2)) }}</span>
                                 </div>
                             </div>
@@ -79,12 +66,16 @@
                             <i class="bi bi-pencil-square"></i> Edit
                         </a>
 
-                        {{-- Tombol Hapus --}}
+                        {{-- Tombol Hapus (pakai SweetAlert global) --}}
                         <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST"
-                            onsubmit="return confirm('Anda yakin ingin menghapus user ini? Semua laporan yang terkait akan ikut terhapus.');">
+                              class="d-inline form-delete"
+                              data-title="Yakin hapus user?"
+                              data-message="User yang dihapus beserta semua laporan terkait tidak bisa dikembalikan.">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger" {{ auth()->id() == $user->id ? 'disabled' : '' }}>
+                            <button type="submit"
+                                    class="btn btn-sm btn-danger"
+                                    {{ auth()->id() == $user->id ? 'disabled' : '' }}>
                                 <i class="bi bi-trash"></i> Hapus
                             </button>
                         </form>
@@ -92,7 +83,7 @@
                 </div>
             </div>
         @empty
-            {{-- Pesan jika tidak ada user yang ditemukan --}}
+            {{-- Pesan jika tidak ada user ditemukan --}}
             <div class="col-12">
                 <div class="alert alert-warning text-center">
                     <h5 class="alert-heading">Tidak Ditemukan</h5>
@@ -103,7 +94,6 @@
     </div>
 
     {{-- Paginasi --}}
-    {{-- Paginasi (Custom Style Seperti Dashboard Admin) --}}
     @if ($users->hasPages())
         <div class="mt-4 d-flex justify-content-center">
             <nav>

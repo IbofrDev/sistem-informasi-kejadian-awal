@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LaporanKejadianController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
-
+use App\Http\Controllers\DashboardController; // 🔹 Controller baru untuk filter & pencarian
 
 /*
 |--------------------------------------------------------------------------
@@ -18,20 +18,10 @@ Route::get('/', function () {
     return view('welcome');
 })->middleware('guest');
 
-// Rute Dashboard yang "Pintar"
-Route::get('/dashboard', function () {
-    // Jika yang login adalah admin, langsung arahkan ke dashboard admin
-    if (auth()->user()->role == 'admin') {
-        return redirect()->route('admin.dashboard');
-    }
-
-    // Jika bukan admin (pelapor), tampilkan riwayat laporannya
-    $user = auth()->user();
-    $laporanKejadian = $user->laporanKejadian()->latest()->get();
-    return view('dashboard', [
-        'laporanKejadian' => $laporanKejadian
-    ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Rute Dashboard yang "Pintar" dengan Filter & Pencarian
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 // Grup Rute untuk Pengguna yang Sudah Login (umum)
 Route::middleware('auth')->group(function () {
@@ -43,8 +33,8 @@ Route::middleware('auth')->group(function () {
     // Rute CRUD Laporan untuk Pelapor
     Route::resource('laporan', LaporanKejadianController::class);
     Route::get('/laporan/{laporan}/print', [LaporanKejadianController::class, 'print'])
-    ->middleware('auth')
-    ->name('laporan.print');
+        ->middleware('auth')
+        ->name('laporan.print');
 });
 
 // Grup Rute KHUSUS untuk Admin
