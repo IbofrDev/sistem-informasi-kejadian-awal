@@ -4,61 +4,81 @@
 @section('page-title', 'Dashboard Admin')
 
 @section('content')
+    <style>
+        /* Pastikan semua text header kartu tidak terpecah dan tersusun rapi */
+        .card-stat .text-header {
+            white-space: nowrap;
+            font-size: 0.9rem;
+            /* 🔥 diperbesar dari 0.75rem */
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.5px;
+            /* opsional, bikin teks lebih rapi */
+        }
+
+        .card-stat .icon {
+            font-size: 2rem;
+            color: #6c757d;
+        }
+
+        .card-stat .value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #343a40;
+        }
+    </style>
+
     {{-- Baris untuk Kartu Statistik --}}
     <div class="row">
+        {{-- Total Laporan --}}
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start-primary shadow-sm h-100 py-2">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total Laporan</div>
-                            <div class="h5 mb-0 fw-bold text-gray-800">{{ $totalLaporan }}</div>
-                        </div>
-                        <div class="col-auto"><i class="bi bi-file-earmark-text-fill fs-2 text-secondary"></i></div>
+            <div class="card border-start-primary shadow-sm h-100 py-2 card-stat">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-header text-primary">Total Laporan</div>
+                        <div class="value">{{ $totalLaporan }}</div>
                     </div>
+                    <i class="bi bi-file-earmark-text-fill icon"></i>
                 </div>
             </div>
         </div>
 
-        {{-- Kartu Laporan Baru (Dikirim) --}}
+        {{-- Laporan Baru --}}
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start-info shadow-sm h-100 py-2">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <div class="text-xs fw-bold text-info text-uppercase mb-1">Laporan Baru</div>
-                            <div class="h5 mb-0 fw-bold text-gray-800">{{ $laporanBaru }}</div>
-                        </div>
-                        <div class="col-auto"><i class="bi bi-inbox-fill fs-2 text-secondary"></i></div>
+            <div class="card border-start-info shadow-sm h-100 py-2 card-stat">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-header text-info">Laporan Baru</div>
+                        <div class="value">{{ $laporanBaru }}</div>
                     </div>
+                    <i class="bi bi-inbox-fill icon"></i>
                 </div>
             </div>
         </div>
 
+        {{-- Perlu Diverifikasi --}}
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start-warning shadow-sm h-100 py-2">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">Perlu Diverifikasi</div>
-                            <div class="h5 mb-0 fw-bold text-gray-800">{{ $perluVerifikasi }}</div>
-                        </div>
-                        <div class="col-auto"><i class="bi bi-patch-question-fill fs-2 text-secondary"></i></div>
+            <div class="card border-start-warning shadow-sm h-100 py-2 card-stat">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-header text-warning">Perlu Diverifikasi</div>
+                        <div class="value">{{ $perluVerifikasi }}</div>
                     </div>
+                    <i class="bi bi-patch-question-fill icon"></i>
                 </div>
             </div>
         </div>
 
+        {{-- Laporan Selesai --}}
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start-success shadow-sm h-100 py-2">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <div class="text-xs fw-bold text-success text-uppercase mb-1">Laporan Selesai</div>
-                            <div class="h5 mb-0 fw-bold text-gray-800">{{ $laporanSelesai }}</div>
-                        </div>
-                        <div class="col-auto"><i class="bi bi-check-circle-fill fs-2 text-secondary"></i></div>
+            <div class="card border-start-success shadow-sm h-100 py-2 card-stat">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-header text-success">Laporan Selesai</div>
+                        <div class="value">{{ $laporanSelesai }}</div>
                     </div>
+                    <i class="bi bi-check-circle-fill icon"></i>
                 </div>
             </div>
         </div>
@@ -73,14 +93,12 @@
             <div class="d-flex flex-wrap align-items-center gap-2">
                 {{-- Form Pencarian --}}
                 <form action="{{ route('admin.dashboard') }}" method="GET" class="d-flex">
-                    {{-- Pertahankan filter status bila aktif --}}
                     @if ($selectedStatus)
                         <input type="hidden" name="status" value="{{ $selectedStatus }}">
                     @endif
 
                     <input type="text" name="search" class="form-control form-control-sm me-2"
-                           placeholder="Cari ID, Nama Kapal, Jenis Kapal, atau Tanggal..."
-                           value="{{ request('search') }}">
+                        placeholder="Cari ID, Nama Kapal, Jenis Kapal, atau Tanggal..." value="{{ request('search') }}">
 
                     <button type="submit" class="btn btn-sm btn-primary me-1">
                         <i class="bi bi-search"></i>
@@ -145,24 +163,28 @@
                                     @endif
                                 </td>
                                 <td class="text-center d-flex justify-content-center gap-1">
-                                    <form action="{{ route('admin.laporan.updateStatus', $laporan->id) }}" method="POST" class="d-inline">
+                                    <form action="{{ route('admin.laporan.updateStatus', $laporan->id) }}" method="POST"
+                                        class="d-inline">
                                         @csrf
                                         @method('PATCH')
                                         <select name="status" class="form-select form-select-sm d-inline-block w-auto"
-                                                onchange="this.form.submit()">
-                                            <option value="dikirim" {{ $laporan->status_laporan == 'dikirim' ? 'selected' : '' }}>Dikirim</option>
+                                            onchange="this.form.submit()">
+                                            <option value="dikirim" {{ $laporan->status_laporan == 'dikirim' ? 'selected' : '' }}>
+                                                Dikirim</option>
                                             <option value="diverifikasi" {{ $laporan->status_laporan == 'diverifikasi' ? 'selected' : '' }}>Diverifikasi</option>
-                                            <option value="selesai" {{ $laporan->status_laporan == 'selesai' ? 'selected' : '' }}>Selesai</option>
+                                            <option value="selesai" {{ $laporan->status_laporan == 'selesai' ? 'selected' : '' }}>
+                                                Selesai</option>
                                         </select>
                                     </form>
 
                                     <a href="{{ route('admin.laporan.show', $laporan->id) }}" class="btn btn-sm btn-info"
-                                       title="Detail"><i class="bi bi-eye-fill"></i></a>
+                                        title="Detail"><i class="bi bi-eye-fill"></i></a>
 
                                     <a href="{{ route('admin.laporan.print', $laporan->id) }}" class="btn btn-sm btn-secondary"
-                                       title="Cetak PDF"><i class="bi bi-printer-fill"></i></a>
+                                        title="Cetak PDF"><i class="bi bi-printer-fill"></i></a>
 
-                                    <form action="{{ route('admin.laporan.destroy', $laporan->id) }}" method="POST" class="d-inline form-delete">
+                                    <form action="{{ route('admin.laporan.destroy', $laporan->id) }}" method="POST"
+                                        class="d-inline form-delete">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
