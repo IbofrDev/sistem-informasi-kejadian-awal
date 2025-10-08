@@ -1,28 +1,25 @@
-# Gunakan image resmi PHP + extensions
+# Gunakan image resmi PHP dengan ekstensi yang dibutuhkan Laravel
 FROM php:8.2-fpm
 
-# Install dependencies
+# Install dependencies sistem dan ekstensi PHP penting
 RUN apt-get update && apt-get install -y \
     zip unzip git curl libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
     && docker-php-ext-install pdo pdo_mysql gd
 
-# Install Composer
+# Install Composer dari image resmi
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
+# Set working directory di dalam container
 WORKDIR /var/www/html
 
-# Copy seluruh file project
+# Salin seluruh file project Laravel ke dalam container
 COPY . .
 
-# Install dependencies Laravel
+# Install dependency Laravel
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Generate app key otomatis jika belum ada
-RUN php artisan key:generate --force || true
-
-# Expose port
+# Expose port untuk Railway (Railway akan gunakan PORT=8080)
 EXPOSE 8080
 
-# Jalankan Laravel di port 10000
-CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
+# Jalankan Laravel menggunakan port yang diberikan Railway
+CMD bash -c "php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"
