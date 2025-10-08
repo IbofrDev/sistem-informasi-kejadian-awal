@@ -22,7 +22,7 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 RUN php artisan key:generate --force || true
 
 # Expose port
-EXPOSE 10000
+EXPOSE 8080
 
 # Jalankan Laravel di port 10000
-CMD php artisan serve --host=0.0.0.0 --port=10000
+CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
