@@ -10,25 +10,26 @@ use Laravel\Sanctum\HasApiTokens; // Penting untuk API
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable; // Pastikan HasApiTokens ada di sini
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * Atribut yang boleh diisi secara mass assignment.
      *
      * @var array<int, string>
      */
     protected $fillable = [
         'nama',
+        'pt',               // 🆕 Tambahkan kolom PT / Perusahaan
+        'jabatan',
+        'jenis_kapal',
         'phone_number',
         'email',
         'password',
         'role',
-        'jabatan',
-        'jenis_kapal',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Atribut yang harus disembunyikan dalam serialisasi (mis. JSON response).
      *
      * @var array<int, string>
      */
@@ -38,7 +39,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Konversi atribut ke tipe data tertentu.
      *
      * @return array<string, string>
      */
@@ -51,7 +52,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Mendefinisikan relasi bahwa satu User bisa memiliki banyak LaporanKejadian.
+     * Relasi: satu User memiliki banyak LaporanKejadian.
      */
     public function laporanKejadian(): HasMany
     {
@@ -59,7 +60,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Mendapatkan satu laporan kejadian terakhir dari user.
+     * Relasi: satu User memiliki satu laporan kejadian terbaru.
      */
     public function latestReport()
     {

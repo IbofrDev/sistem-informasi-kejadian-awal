@@ -21,7 +21,6 @@
         .register-page-wrapper {
             min-height: 100vh;
             background-image: url('/images/register.png');
-            /* Pastikan gambar ini ada di public/images */
             background-size: cover;
             background-position: center;
             display: flex;
@@ -31,13 +30,11 @@
         .register-card {
             background-color: rgba(255, 255, 255, 0.9);
             padding: 1.5rem;
-            /* Diperkecil dari 2rem */
             border-radius: 0.75rem;
             box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, .15);
             backdrop-filter: blur(5px);
             width: 100%;
             max-width: 450px;
-            /* Lebar maksimal form diperkecil */
         }
 
         .register-card .form-label {
@@ -71,30 +68,13 @@
                 <div class="container">
                     <a class="navbar-brand d-flex align-items-center" href="/">
                         <img src="{{ asset('images/logo.png') }}" alt="KSOP Logo" height="40"
-                            class="d-inline-block me-2">
+                             class="d-inline-block me-2">
                         <div>
                             <span class="fw-bold">SIKAP</span>
                             <small class="d-block text-muted fw-normal"
-                                style="font-size: 0.7rem; line-height: 1;">Sistem Informasi Kecelakaan Kapal</small>
+                                   style="font-size: 0.7rem; line-height: 1;">Sistem Informasi Kecelakaan Kapal</small>
                         </div>
                     </a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav ms-auto align-items-center">
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url('/') }}">Home</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Contact</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">About Us</a>
-                            </li>
-                        </ul>
-                    </div>
                 </div>
             </nav>
         </header>
@@ -108,16 +88,25 @@
                     <div class="mb-2">
                         <label for="nama" class="form-label">Nama Lengkap</label>
                         <input id="nama" type="text" class="form-control @error('nama') is-invalid @enderror"
-                            name="nama" value="{{ old('nama') }}" placeholder="Full Name..." required autofocus>
+                               name="nama" value="{{ old('nama') }}" placeholder="Full Name..." required autofocus>
                         @error('nama')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- 🆕 Field Nama PT -->
+                    <div class="mb-2">
+                        <label for="pt" class="form-label">Nama PT / Perusahaan</label>
+                        <input id="pt" type="text" class="form-control @error('pt') is-invalid @enderror"
+                               name="pt" value="{{ old('pt') }}" placeholder="Nama Perusahaan..." required>
+                        @error('pt')
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="mb-2">
                         <label for="jabatan" class="form-label">Jabatan</label>
-                        <select id="jabatan" name="jabatan" class="form-select @error('jabatan') is-invalid @enderror"
-                            required>
+                        <select id="jabatan" name="jabatan" class="form-select @error('jabatan') is-invalid @enderror" required>
                             <option selected disabled value="">Pilih Jabatan...</option>
                             <option value="Master/Nakhoda">Master/Nakhoda</option>
                             <option value="C/O (Chief Officer)">C/O (Chief Officer)</option>
@@ -125,14 +114,14 @@
                             <option value="3rd Officer">3rd Officer</option>
                         </select>
                         @error('jabatan')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="mb-2">
                         <label for="jenis_kapal" class="form-label">Jenis Kapal</label>
                         <select id="jenis_kapal" name="jenis_kapal"
-                            class="form-select @error('jenis_kapal') is-invalid @enderror" required>
+                                class="form-select @error('jenis_kapal') is-invalid @enderror" required>
                             <option selected disabled value="">Pilih Jenis Kapal...</option>
                             <option value="KM (Kapal Motor)">KM (Kapal Motor)</option>
                             <option value="MV (Motor Vessel)">MV (Motor Vessel)</option>
@@ -145,48 +134,53 @@
                             <option value="KLM (Kapal Layar Motor / Yacth)">KLM (Kapal Layar Motor / Yacth)</option>
                         </select>
                         @error('jenis_kapal')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                    </div>
+
+                    <div class="mb-2">
                         <label for="phone_number" class="form-label">Nomor Telepon</label>
                         <input id="phone_number" type="text"
-                            class="form-control @error('phone_number') is-invalid @enderror" name="phone_number"
-                            value="{{ old('phone_number') }}" placeholder="Nomor Telepon..." required>
+                               class="form-control @error('phone_number') is-invalid @enderror" name="phone_number"
+                               value="{{ old('phone_number') }}" placeholder="Nomor Telepon..." required>
                         @error('phone_number')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="mb-2">
                         <label for="email" class="form-label">Email</label>
                         <input id="email" type="email" class="form-control @error('email') is-invalid @enderror"
-                            name="email" value="{{ old('email') }}" placeholder="Email..." required>
+                               name="email" value="{{ old('email') }}" placeholder="Email..." required>
                         @error('email')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="mb-2">
                         <label for="password" class="form-label">Password</label>
                         <input id="password" type="password"
-                            class="form-control @error('password') is-invalid @enderror" name="password"
-                            placeholder="Password..." required>
+                               class="form-control @error('password') is-invalid @enderror" name="password"
+                               placeholder="Password..." required>
                         @error('password')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="mb-2">
                         <label for="password_confirmation" class="form-label">Confirm Password</label>
                         <input id="password_confirmation" type="password" class="form-control"
-                            name="password_confirmation" placeholder="Password..." required>
+                               name="password_confirmation" placeholder="Password..." required>
                     </div>
 
                     <div class="d-grid mt-3">
                         <button type="submit" class="btn btn-primary">Sign Up</button>
                     </div>
                 </form>
+
                 <p class="text-center text-muted mt-3 mb-0">
-                    Sudah punya akun? <a href="{{ url('/') }}">Login</a>
+                    Sudah punya akun?
+                    <a href="{{ url('/') }}">Login</a>
                 </p>
             </div>
         </main>
