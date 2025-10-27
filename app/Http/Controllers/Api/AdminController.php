@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\LaporanKejadianResource;
 use App\Models\LaporanKejadian;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -45,17 +45,23 @@ class AdminController extends Controller
     }
 
     /**
-     * 📄 Menampilkan detail laporan spesifik untuk Admin (dengan relasi user dan lampiran).
+     * 📄 Menampilkan detail laporan spesifik untuk Admin
+     * (dengan relasi user dan lampiran).
+     * Menggunakan resource agar seluruh field dikirim utuh.
+     * Flutter memanggil endpoint: GET /api/admin/laporan/{id}
      */
     public function showLaporan(LaporanKejadian $laporan)
     {
         $laporan->load('lampiran', 'user');
+        $laporan->refresh(); // pastikan data terbaru masuk termasuk kolom waktu
 
-        return response()->json($laporan, 200);
+        // ✅ kirim seluruh field laporan dengan resource resmi
+        return new LaporanKejadianResource($laporan);
     }
 
     /**
      * ✏️ Memperbarui status laporan oleh admin.
+     * Sekaligus memberi tanda waktu kapan laporan diverifikasi / selesai.
      */
     public function updateStatus(Request $request, LaporanKejadian $laporan)
     {
@@ -63,12 +69,30 @@ class AdminController extends Controller
             'status_laporan' => 'required|string|in:dikirim,diverifikasi,selesai',
         ]);
 
+        // 🔄 Perbarui status laporan terlebih dahulu
         $laporan->update($validatedData);
+
+        // 🕒 Otomatis isi kolom waktu berdasarkan status baru
+        switch ($validatedData['status_laporan']) {
+            case 'dikirim':
+                if (empty($laporan->sent_at)) {
+                    $laporan->update(['sent_at' => now()]);
+                }
+                break;
+            case 'diverifikasi':
+                $laporan->update(['verified_at' => now()]);
+                break;
+            case 'selesai':
+                $laporan->update(['completed_at' => now()]);
+                break;
+        }
+
+        // Refresh untuk memastikan data terbaru terkirim
         $laporan->refresh();
 
         return response()->json([
             'message' => 'Status laporan berhasil diperbarui.',
-            'data' => $laporan,
+            'data' => new LaporanKejadianResource($laporan),
         ], 200);
     }
 
