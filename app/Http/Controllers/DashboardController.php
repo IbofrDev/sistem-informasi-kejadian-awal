@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use App\Models\LaporanKejadian;
 use Carbon\Carbon;
@@ -85,4 +85,15 @@ class DashboardController extends Controller
             'tahunList'       => $tahunList, // ✅ dikirim ke view agar tidak error
         ]);
     }
+    public function printPDF(LaporanKejadian $laporan)
+{
+    // pastikan relasi lampiran ikut dimuat
+    $laporan->load('lampiran');
+
+    // buat PDF dari template yang sudah ada
+    $pdf = Pdf::loadView('laporan.pdf', ['laporan' => $laporan]);
+
+    // tampilkan di tab baru
+    return $pdf->stream('laporan-kejadian-' . $laporan->id . '.pdf');
+}
 }

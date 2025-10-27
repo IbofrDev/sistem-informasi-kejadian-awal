@@ -11,15 +11,21 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="fw-bold text-primary">Detail Laporan Kejadian</h5>
             <div class="btn-group">
-                <a href="{{ route('admin.laporan.print', $laporan) }}" target="_blank" 
-                   class="btn btn-sm btn-success">
-                    <i class="bi bi-printer-fill me-1"></i> Cetak PDF
-                </a>
                 @if(Auth::user()->role == 'admin')
+                    {{-- Tombol Cetak untuk Admin --}}
+                    <a href="{{ route('admin.laporan.print', $laporan->id) }}" target="_blank" 
+                       class="btn btn-sm btn-success">
+                        <i class="bi bi-printer-fill me-1"></i> Cetak PDF
+                    </a>
                     <a href="{{ route('admin.dashboard') }}" class="btn btn-sm btn-secondary">
                         <i class="bi bi-arrow-left me-1"></i> Kembali
                     </a>
                 @else
+                    {{-- Tombol Cetak untuk Pelapor --}}
+                    <a href="{{ route('laporan.print', $laporan->id) }}" target="_blank" 
+                       class="btn btn-sm btn-success">
+                        <i class="bi bi-printer-fill me-1"></i> Cetak PDF
+                    </a>
                     <a href="{{ route('dashboard') }}" class="btn btn-sm btn-secondary">
                         <i class="bi bi-arrow-left me-1"></i> Kembali
                     </a>

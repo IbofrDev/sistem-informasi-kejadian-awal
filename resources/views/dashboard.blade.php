@@ -8,10 +8,11 @@
     <div class="card shadow-sm mb-4">
         <div class="card-body p-4">
             <h4 class="card-title">Selamat Datang, {{ Auth::user()->name }}!</h4>
-            <p class="card-text text-muted">Di sini Anda dapat melihat riwayat laporan yang telah Anda buat dan mengelola
-                laporan Anda.</p>
+            <p class="card-text text-muted">
+                Di sini Anda dapat melihat riwayat laporan yang telah Anda buat dan mengelola laporan Anda.
+            </p>
             <a href="{{ route('laporan.create') }}" class="btn btn-warning">
-                <i class="bi bi-plus-circle-fill me-2"></i>Buat Laporan Baru
+                <i class="bi bi-plus-circle-fill me-2"></i> Buat Laporan Baru
             </a>
         </div>
     </div>
@@ -41,8 +42,12 @@
                     </select>
                 </div>
                 <div class="col-md-4 col-sm-12 d-flex gap-2">
-                    <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-funnel-fill me-1"></i> Filter</button>
-                    <a href="{{ route('dashboard') }}" class="btn btn-sm btn-secondary"><i class="bi bi-x-circle me-1"></i> Reset</a>
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        <i class="bi bi-funnel-fill me-1"></i> Filter
+                    </button>
+                    <a href="{{ route('dashboard') }}" class="btn btn-sm btn-secondary">
+                        <i class="bi bi-x-circle me-1"></i> Reset
+                    </a>
                 </div>
             </form>
         </div>
@@ -68,7 +73,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{-- Loop untuk setiap laporan milik user --}}
                         @forelse ($laporanKejadian as $laporan)
                             <tr>
                                 <td>#{{ $laporan->id }}</td>
@@ -77,7 +81,6 @@
                                 <td>{{ $laporan->jenis_kapal ?? '-' }}</td>
                                 <td>{{ $laporan->nama_kapal ?? '-' }}</td>
                                 <td>
-                                    {{-- Badge status dengan warna berbeda --}}
                                     @if($laporan->status_laporan == 'diverifikasi')
                                         <span class="badge bg-warning text-dark">{{ ucfirst($laporan->status_laporan) }}</span>
                                     @elseif($laporan->status_laporan == 'selesai')
@@ -87,32 +90,35 @@
                                     @endif
                                 </td>
                                 <td class="text-center d-flex justify-content-center gap-1">
-                                    {{-- Tombol Detail --}}
-                                    <a href="{{ route('laporan.show', $laporan->id) }}" class="btn btn-sm btn-info"
-                                        title="Lihat Detail">
+                                    {{-- 🔹 Tombol Detail --}}
+                                    <a href="{{ route('laporan.show', $laporan->id) }}" 
+                                       class="btn btn-sm btn-info" title="Lihat Detail">
                                         <i class="bi bi-eye-fill"></i>
                                     </a>
 
-                                    {{-- Tombol Edit (kalau belum selesai) --}}
+                                    {{-- 🔹 Tombol Edit (hanya kalau belum selesai) --}}
                                     @if($laporan->status_laporan != 'selesai')
-                                        <a href="{{ route('laporan.edit', $laporan->id) }}" class="btn btn-sm btn-warning"
-                                            title="Edit Laporan">
+                                        <a href="{{ route('laporan.edit', $laporan->id) }}" 
+                                           class="btn btn-sm btn-warning" title="Edit Laporan">
                                             <i class="bi bi-pencil-fill"></i>
                                         </a>
                                     @endif
 
-                                    {{-- 🔹 Tombol Cetak PDF --}}
-                                    <a href="{{ route('laporan.print', $laporan->id) }}" class="btn btn-sm btn-secondary"
-                                        title="Cetak PDF">
+                                    {{-- 🔹 Tombol Cetak PDF (dengan target _blank agar langsung buka tab baru) --}}
+                                    <a href="{{ route('laporan.print', $laporan->id) }}" 
+                                       target="_blank"
+                                       class="btn btn-sm btn-secondary"
+                                       title="Cetak PDF">
                                         <i class="bi bi-printer-fill"></i>
                                     </a>
                                 </td>
                             </tr>
                         @empty
-                            {{-- Pesan jika tidak ada laporan --}}
                             <tr>
                                 <td colspan="7" class="text-center py-4">
-                                    <p class="mb-2">Tidak ada laporan untuk bulan/tahun yang dipilih atau Anda belum membuat laporan.</p>
+                                    <p class="mb-2">
+                                        Tidak ada laporan untuk bulan/tahun yang dipilih atau Anda belum membuat laporan.
+                                    </p>
                                     <a href="{{ route('laporan.create') }}" class="btn btn-sm btn-warning">
                                         <i class="bi bi-plus-circle me-1"></i> Buat Laporan Pertama Anda
                                     </a>
@@ -124,5 +130,4 @@
             </div>
         </div>
     </div>
-
 @endsection

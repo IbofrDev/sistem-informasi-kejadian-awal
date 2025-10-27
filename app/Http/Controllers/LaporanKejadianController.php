@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Spatie\Activitylog\Models\Activity;
 use Illuminate\Http\Request;
 use App\Models\LaporanKejadian;
-use App\Models\Lampiran;
+use App\Models\Lampiran;    
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
@@ -124,7 +125,11 @@ class LaporanKejadianController extends Controller
     {
         $this->authorize('view', $laporan);
         $laporan->load('lampiran');
-        return view('laporan.show', compact('laporan'));
+        $activities = Activity::forSubject($laporan)
+                          ->where('causer_id', auth()->id()) // <-- KUNCI FILTERNYA
+                          ->latest()
+                          ->get();
+        return view('laporan.show', compact('laporan', 'activities'));
     }
 
     /**
@@ -191,11 +196,27 @@ class LaporanKejadianController extends Controller
      * 🔹 Cetak laporan ke PDF.
      */
     public function print(LaporanKejadian $laporan)
-    {
+{
+    try {
         $this->authorize('view', $laporan);
+        $laporan->load('lampiran');
 
-        $pdf = Pdf::loadView('laporan.pdf', ['laporan' => $laporan]);
+        \Log::info('Mulai buat PDF', ['laporan_id' => $laporan->id]);
 
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.pdf', ['laporan' => $laporan]);
+
+        \Log::info('View PDF berhasil dibaca');
+
+        // tampilkan di tab baru
         return $pdf->stream('laporan-kejadian-' . $laporan->id . '.pdf');
+    } catch (\Throwable $e) {
+        \Log::error('Gagal buat PDF: ' . $e->getMessage());
+        return response()->make(
+            '<h2>Terjadi kesalahan saat membuat PDF:</h2><pre>'
+            . e($e->getMessage()) . '</pre>',
+            500,
+            ['Content-Type' => 'text/html']
+        );
     }
+}
 }

@@ -5,16 +5,13 @@
 
 @section('content')
     <style>
-        /* Pastikan semua text header kartu tidak terpecah dan tersusun rapi */
         .card-stat .text-header {
             white-space: nowrap;
             font-size: 0.9rem;
-            /* 🔥 diperbesar dari 0.75rem */
             font-weight: 700;
             text-transform: uppercase;
             margin-bottom: 0.4rem;
             letter-spacing: 0.5px;
-            /* opsional, bikin teks lebih rapi */
         }
 
         .card-stat .icon {
@@ -87,18 +84,17 @@
     {{-- Tabel Daftar Laporan --}}
     <div class="card shadow-sm">
         <div class="card-header py-3 d-flex flex-wrap justify-content-between align-items-center">
-            <h6 class="m-0 fw-bold text-primary">Daftar Laporan Kejadian</h6>
+            <h6 class="m-0 fw-bold text-dark">Daftar Laporan Kejadian</h6>
 
-            {{-- Grup Form Search + Filter --}}
             <div class="d-flex flex-wrap align-items-center gap-2">
-                {{-- Form Pencarian --}}
                 <form action="{{ route('admin.dashboard') }}" method="GET" class="d-flex">
                     @if ($selectedStatus)
                         <input type="hidden" name="status" value="{{ $selectedStatus }}">
                     @endif
 
                     <input type="text" name="search" class="form-control form-control-sm me-2"
-                        placeholder="Cari ID, Nama Kapal, Jenis Kapal, atau Tanggal..." value="{{ request('search') }}">
+                           placeholder="Cari ID, Nama Kapal, Jenis Kapal, atau Tanggal..."
+                           value="{{ request('search') }}">
 
                     <button type="submit" class="btn btn-sm btn-primary me-1">
                         <i class="bi bi-search"></i>
@@ -109,22 +105,21 @@
                     </a>
                 </form>
 
-                {{-- Grup Tombol Filter Status --}}
                 <div class="btn-group" role="group" aria-label="Filter Status Laporan">
                     <a href="{{ route('admin.dashboard') }}"
-                        class="btn btn-sm {{ !$selectedStatus ? 'btn-primary' : 'btn-outline-primary' }}">
+                       class="btn btn-sm {{ !$selectedStatus ? 'btn-primary' : 'btn-outline-primary' }}">
                         Semua
                     </a>
                     <a href="{{ route('admin.dashboard', ['status' => 'dikirim']) }}"
-                        class="btn btn-sm {{ $selectedStatus == 'dikirim' ? 'btn-primary' : 'btn-outline-primary' }}">
+                       class="btn btn-sm {{ $selectedStatus == 'dikirim' ? 'btn-primary' : 'btn-outline-primary' }}">
                         Dikirim
                     </a>
                     <a href="{{ route('admin.dashboard', ['status' => 'diverifikasi']) }}"
-                        class="btn btn-sm {{ $selectedStatus == 'diverifikasi' ? 'btn-primary' : 'btn-outline-primary' }}">
+                       class="btn btn-sm {{ $selectedStatus == 'diverifikasi' ? 'btn-primary' : 'btn-outline-primary' }}">
                         Diverifikasi
                     </a>
                     <a href="{{ route('admin.dashboard', ['status' => 'selesai']) }}"
-                        class="btn btn-sm {{ $selectedStatus == 'selesai' ? 'btn-primary' : 'btn-outline-primary' }}">
+                       class="btn btn-sm {{ $selectedStatus == 'selesai' ? 'btn-primary' : 'btn-outline-primary' }}">
                         Selesai
                     </a>
                 </div>
@@ -164,27 +159,38 @@
                                 </td>
                                 <td class="text-center d-flex justify-content-center gap-1">
                                     <form action="{{ route('admin.laporan.updateStatus', $laporan->id) }}" method="POST"
-                                        class="d-inline">
+                                          class="d-inline">
                                         @csrf
                                         @method('PATCH')
                                         <select name="status" class="form-select form-select-sm d-inline-block w-auto"
-                                            onchange="this.form.submit()">
+                                                onchange="this.form.submit()">
                                             <option value="dikirim" {{ $laporan->status_laporan == 'dikirim' ? 'selected' : '' }}>
-                                                Dikirim</option>
-                                            <option value="diverifikasi" {{ $laporan->status_laporan == 'diverifikasi' ? 'selected' : '' }}>Diverifikasi</option>
+                                                Dikirim
+                                            </option>
+                                            <option value="diverifikasi" {{ $laporan->status_laporan == 'diverifikasi' ? 'selected' : '' }}>
+                                                Diverifikasi
+                                            </option>
                                             <option value="selesai" {{ $laporan->status_laporan == 'selesai' ? 'selected' : '' }}>
-                                                Selesai</option>
+                                                Selesai
+                                            </option>
                                         </select>
                                     </form>
 
-                                    <a href="{{ route('admin.laporan.show', $laporan->id) }}" class="btn btn-sm btn-info"
-                                        title="Detail"><i class="bi bi-eye-fill"></i></a>
+                                    {{-- Tombol Lihat (#6C757D abu-abu Bootstrap) --}}
+                                    <a href="{{ route('admin.laporan.show', $laporan->id) }}" class="btn btn-sm"
+                                       style="background-color:#6C757D; color:#fff;" title="Detail">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </a>
 
-                                    <a href="{{ route('admin.laporan.print', $laporan->id) }}" class="btn btn-sm btn-secondary"
-                                        title="Cetak PDF"><i class="bi bi-printer-fill"></i></a>
+                                    {{-- Tombol Cetak (#FFC107 kuning) --}}
+                                    <a href="{{ route('admin.laporan.print', $laporan->id) }}" class="btn btn-sm"
+                                       style="background-color:#FFC107; color:#000;" title="Cetak PDF">
+                                        <i class="bi bi-printer-fill"></i>
+                                    </a>
 
+                                    {{-- Tombol Hapus (merah, default Bootstrap) --}}
                                     <form action="{{ route('admin.laporan.destroy', $laporan->id) }}" method="POST"
-                                        class="d-inline form-delete">
+                                          class="d-inline form-delete">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger" title="Hapus">

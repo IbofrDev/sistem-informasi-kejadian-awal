@@ -5,17 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+// 1. IMPORT CLASS YANG DIPERLUKAN
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 class LaporanKejadian extends Model
 {
-    use HasFactory;
+    // 2. GUNAKAN TRAIT LOGGER
+    use HasFactory, LogsActivity;
 
     protected $table = 'laporan_kejadian';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'user_id',
         'status_laporan',
@@ -62,5 +62,25 @@ class LaporanKejadian extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    
+    // 3. TAMBAHKAN FUNGSI INI UNTUK MENGATUR LOGGER
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            // Mencatat semua kolom di $fillable
+            ->logFillable() 
+            
+            // Hanya mencatat perubahan jika ada kolom yang benar-benar berubah
+            ->logOnlyDirty() 
+            
+            // Tidak menyimpan log jika hanya kolom 'updated_at' yang berubah
+            ->dontSubmitEmptyLogs() 
+            
+            // Memberi nama log agar mudah dibaca
+            ->useLogName('Laporan Kejadian') 
+            
+            // Memberi deskripsi untuk setiap aksi
+            ->setDescriptionForEvent(fn(string $eventName) => "Laporan kejadian telah {$eventName}");
     }
 }

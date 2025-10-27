@@ -15,6 +15,17 @@
             background-color: #E9C217 !important;
             color: #1f1f1f !important;
         }
+
+        /* Style untuk dropdown notifikasi */
+        .dropdown-menu-notif {
+            width: 350px !important;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .notif-item .notif-content {
+            white-space: normal; /* Agar teks bisa wrap */
+            font-size: 0.9rem;
+        }
     </style>
 
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
@@ -51,6 +62,16 @@
                             <i class="bi bi-people-fill me-2"></i> <strong>Kelola User</strong>
                         </a>
                     </li>
+                    
+                    <!-- 🔽 TAMBAHKAN KODE INI 🔽 -->
+                    <li class="nav-item mb-1">
+                        <a href="{{ route('laporan.create') }}"
+                            class="nav-link text-white {{ request()->routeIs('laporan.create') ? 'active' : '' }}">
+                            <i class="bi bi-plus-circle-fill me-2"></i> <strong>Buat Laporan Baru</strong>
+                        </a>
+                    </li>
+                    <!-- 🔼 AKHIR DARI KODE BARU 🔼 -->
+
                 @else
                     <li class="nav-item mb-1">
                         <a href="{{ route('dashboard') }}"
@@ -74,27 +95,75 @@
                 <div class="container-fluid">
                     <h4 class="mb-0 fw-bold">@yield('page-title', 'Halaman Utama')</h4>
 
-                    <div class="dropdown">
-                        <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle fs-4 me-2"></i>
-                            <span class="d-none d-sm-inline">{{ Auth::user()->nama ?? 'Pengguna' }}</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end text-small shadow">
-                            <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profile</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="bi bi-box-arrow-right me-2"></i>Sign out
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
+                    <!-- Wrapper untuk item navbar di kanan -->
+                    <div class="d-flex align-items-center ms-auto">
+
+                        <!-- 1. Dropdown Notifikasi (HANYA UNTUK ADMIN) -->
+                        @if (Auth::user()->role == 'admin')
+                            <div class="dropdown me-3">
+                                <!-- Tombol Lonceng -->
+                                <a href="#" class="d-block link-dark text-decoration-none position-relative"
+                                    data-bs-toggle="dropdown" aria-expanded="false" title="Laporan Baru">
+                                    <i class="bi bi-bell-fill fs-4"></i>
+                                    
+                                    <!-- Badge Jumlah Laporan Baru -->
+                                    @if ($laporanBaruCount > 0)
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; padding: 0.25em 0.4em;">
+                                            {{ $laporanBaruCount }}
+                                            <span class="visually-hidden">laporan baru</span>
+                                        </span>
+                                    @endif
+                                </a>
+
+                                <!-- Menu Dropdown Notifikasi -->
+                                <ul class="dropdown-menu dropdown-menu-end text-small shadow dropdown-menu-notif">
+                                    <li><h6 class="dropdown-header">Laporan Baru (Status: Dikirim)</h6></li>
+                                    <li><hr class="dropdown-divider"></li>
+
+                                    @forelse ($laporanBaru as $laporan)
+                                        <li class="notif-item">
+                                            <a class="dropdown-item" href="{{ route('admin.laporan.show', $laporan->id) }}">
+                                                <div class="notif-content">
+                                                    <strong>Laporan #{{ $laporan->id }}</strong> dari <strong>{{ $laporan->user->nama ?? 'Pelapor' }}</strong>
+                                                    <small class="d-block text-muted">{{ $laporan->created_at->diffForHumans() }}</small>
+                                                </div>
+                                            </a>
+                                        </li>
+                                    @empty
+                                        <li><span class="dropdown-item text-muted text-center py-3">Tidak ada laporan baru.</span></li>
+                                    @endforelse
+
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-center fw-bold" href="{{ route('admin.dashboard', ['status' => 'dikirim']) }}">Lihat Semua Laporan 'Dikirim'</a></li>
+                                </ul>
+                            </div>
+                        @endif
+
+                        <!-- 2. Dropdown Profil (Kode Anda yang sudah ada) -->
+                        <div class="dropdown">
+                            <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle fs-4 me-2"></i>
+                                <span class="d-none d-sm-inline">{{ Auth::user()->nama ?? 'Pengguna' }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end text-small shadow">
+                                <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profile</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="bi bi-box-arrow-right me-2"></i>Sign out
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+
                     </div>
+                    <!-- AKHIR DARI KODE BARU 🔼 -->
                 </div>
             </header>
 
@@ -139,13 +208,13 @@
     });
     </script>
 
-    {{-- SweetAlert2 untuk Flash Message dinamis --}}
+    {{-- SweetAlert2 untuk Flash Message dinamis (Versi Perbaikan Final) --}}
     @if(session('success'))
       <script>
         document.addEventListener('DOMContentLoaded', function () {
             Swal.fire({
                 title: 'Berhasil!',
-                text: "{{ session('success') }}",
+                text: "{!! addslashes(session('success')) !!}",
                 icon: "{{ session('swal_icon') ?? 'success' }}", 
                 confirmButtonText: 'OK'
             });
@@ -158,7 +227,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             Swal.fire({
                 title: 'Oops!',
-                text: "{{ session('error') }}",
+                text: "{!! addslashes(session('error')) !!}",
                 icon: 'error',
                 confirmButtonText: 'OK'
             });
@@ -168,3 +237,4 @@
 
 </body>
 </html>
+

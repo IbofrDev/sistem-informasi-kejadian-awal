@@ -18,32 +18,44 @@
 
     {{-- BAGIAN 1: KARTU DETAIL USER --}}
     <div class="card shadow-sm mb-4">
+        {{-- kembali sejajarkan tengah untuk avatar dan teks --}}
         <div class="card-body d-flex align-items-center">
             {{-- Avatar Inisial Nama --}}
             <div class="flex-shrink-0 me-4">
                 <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-                    style="width: 60px; height: 60px;">
+                     style="width: 60px; height: 60px;">
                     <span class="fw-bold fs-4">{{ strtoupper(substr($pelapor->nama ?? 'U', 0, 2)) }}</span>
                 </div>
             </div>
 
             {{-- Info utama --}}
-            <div class="flex-grow-1">
-                <h4 class="mb-1">{{ $pelapor->nama }}</h4>
-                <p class="text-muted mb-1">{{ $pelapor->email }}</p>
-                <span class="badge bg-secondary">{{ ucfirst($pelapor->jabatan ?? 'User') }}</span>
-            </div>
-        </div>
+            <div class="flex-grow-1" style="margin-top: -6px;"> {{-- naikkan teks seluruhnya --}}
+                <h4 class="mb-2">{{ $pelapor->nama }}</h4>
 
-        <div class="card-footer bg-light">
-            <div class="row">
-                <div class="col-md-6">
-                    <small class="text-muted d-block">Jenis Kapal</small>
-                    <span class="fw-bold">{{ $pelapor->jenis_kapal ?? '-' }}</span>
+                {{-- Bagian Email --}}
+                <div class="small text-muted mb-2">
+                    <div>Email</div>
+                    <div class="fw-bold text-dark">{{ $pelapor->email }}</div>
                 </div>
-                <div class="col-md-6">
-                    <small class="text-muted d-block">Nomor Telepon</small>
-                    <span class="fw-bold">{{ $pelapor->phone_number ?? '-' }}</span>
+
+                {{-- Nomor Telepon dan Jenis Kapal --}}
+                <div class="small text-muted mb-2">
+                    <div class="mb-1">
+                        <div>Nomor Telepon</div>
+                        <div class="fw-bold text-dark">{{ $pelapor->phone_number ?? '-' }}</div>
+                    </div>
+                    <div>
+                        <div>Jenis Kapal</div>
+                        <div class="fw-bold text-dark">{{ $pelapor->jenis_kapal ?? '-' }}</div>
+                    </div>
+                </div>
+
+                {{-- Jabatan Pelapor --}}
+                <div class="small text-muted">
+                    <div>Jabatan</div>
+                    <div class="fw-bold text-dark">
+                        <span class="badge bg-secondary">{{ ucfirst($pelapor->jabatan ?? 'User') }}</span>
+                    </div>
                 </div>
             </div>
         </div>

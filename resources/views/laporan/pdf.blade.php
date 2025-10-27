@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Kejadian #{{ str_pad($laporan->id, 6, '0', STR_PAD_LEFT) }}</title>
     <style>
         body {
-            font-family: 'Helvetica', sans-serif;
+            font-family: DejaVu Sans, Helvetica, Arial, sans-serif;
             font-size: 11px;
             line-height: 1.4;
             color: #333;
+            margin: 20px;
         }
 
         .container {
@@ -33,6 +33,12 @@
         .header p {
             margin: 0;
             font-size: 12px;
+        }
+
+        .logo {
+            width: 70px;
+            height: auto;
+            margin-bottom: 10px;
         }
 
         .main-table {
@@ -68,41 +74,54 @@
             font-size: 12px;
             margin-top: 0;
             margin-bottom: 10px;
+            color: #000;
         }
 
         .report-content {
             white-space: pre-wrap;
             margin-top: 5px;
         }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 10px;
+            color: #666;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
+        {{-- Header --}}
         <div class="header">
-            <img src="{{ public_path('images/logo_ksop.png') }}" alt="Logo KSOP"
-                style="width: 70px; height: auto; margin-bottom: 10px;">
+            @php
+                $logoPath = public_path('images/logo_ksop.png');
+            @endphp
+            @if(file_exists($logoPath))
+                <img src="{{ $logoPath }}" alt="Logo KSOP" class="logo">
+            @endif
             <h1>LAPORAN KECELAKAAN KAPAL</h1>
             <p>Sistem Informasi Kecelakaan Kapal - KSOP Kelas I Banjarmasin</p>
         </div>
 
+        {{-- Isi Tabel Utama --}}
         <table class="main-table">
-            <!-- Identitas Pelapor & Kapal -->
             <tr>
                 <td style="width: 50%;">
                     <h6>Identitas Pelapor</h6>
                     <table class="inner-table">
                         <tr>
-                            <th scope="row">Nama</th>
-                            <td>: {{ $laporan->nama_pelapor }}</td>
+                            <th>Nama</th>
+                            <td>: {{ $laporan->nama_pelapor ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th scope="row">Telepon</th>
-                            <td>: {{ $laporan->telepon_pelapor }}</td>
+                            <th>Telepon</th>
+                            <td>: {{ $laporan->telepon_pelapor ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th scope="row">Jabatan</th>
-                            <td>: {{ $laporan->jabatan_pelapor }}</td>
+                            <th>Jabatan</th>
+                            <td>: {{ $laporan->jabatan_pelapor ?? '-' }}</td>
                         </tr>
                     </table>
                 </td>
@@ -110,56 +129,56 @@
                     <h6>Identitas Kapal</h6>
                     <table class="inner-table">
                         <tr>
-                            <th scope="row">Nama Kapal</th>
-                            <td>: {{ $laporan->nama_kapal }}</td>
+                            <th>Nama Kapal</th>
+                            <td>: {{ $laporan->nama_kapal ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th scope="row">Jenis Kapal</th>
-                            <td>: {{ $laporan->jenis_kapal }}</td>
+                            <th>Jenis Kapal</th>
+                            <td>: {{ $laporan->jenis_kapal ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th scope="row">Bendera</th>
-                            <td>: {{ $laporan->bendera_kapal }}</td>
+                            <th>Bendera</th>
+                            <td>: {{ $laporan->bendera_kapal ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th scope="row">GRT</th>
-                            <td>: {{ $laporan->grt_kapal }}</td>
+                            <th>GRT</th>
+                            <td>: {{ $laporan->grt_kapal ?? '-' }}</td>
                         </tr>
                     </table>
                 </td>
             </tr>
 
-            <!-- Detail Kejadian -->
             <tr>
                 <td colspan="2">
                     <h6>Detail Kejadian</h6>
                     <table class="inner-table">
                         <tr>
-                            <th scope="row">Posisi Lintang</th>
-                            <td>: {{ $laporan->posisi_lintang }}</td>
+                            <th>Posisi Lintang</th>
+                            <td>: {{ $laporan->posisi_lintang ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th scope="row">Posisi Bujur</th>
-                            <td>: {{ $laporan->posisi_bujur }}</td>
+                            <th>Posisi Bujur</th>
+                            <td>: {{ $laporan->posisi_bujur ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th scope="row">Tanggal Kejadian</th>
+                            <th>Tanggal Kejadian</th>
                             <td>: {{ \Carbon\Carbon::parse($laporan->tanggal_laporan)->format('d M Y, H:i') }}</td>
                         </tr>
                     </table>
                 </td>
             </tr>
 
-            <!-- Isi Laporan -->
             <tr>
                 <td colspan="2">
                     <h6>Isi Laporan</h6>
-                    <div class="report-content">{{ $laporan->isi_laporan }}</div>
+                    <div class="report-content">{{ $laporan->isi_laporan ?? '-' }}</div>
                 </td>
             </tr>
         </table>
 
+        <div class="footer">
+            <p>Dicetak otomatis oleh Sistem Informasi Kejadian Awal (SIKAP)</p>
+        </div>
     </div>
 </body>
-
 </html>

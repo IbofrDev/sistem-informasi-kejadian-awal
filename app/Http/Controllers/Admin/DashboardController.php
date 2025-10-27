@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Spatie\Activitylog\Models\Activity;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -81,8 +82,12 @@ class DashboardController extends Controller
     {
         $laporan->load('lampiran', 'user');
         $pelapor = $laporan->user;
+        $activities = Activity::forSubject($laporan)
+                          ->with('causer')
+                          ->latest()
+                          ->get();
 
-        return view('admin.detail', compact('laporan', 'pelapor'));
+        return view('admin.detail', compact('laporan', 'pelapor', 'activities'));
     }
 
     public function updateStatus(Request $request, LaporanKejadian $laporan)
@@ -144,8 +149,19 @@ class DashboardController extends Controller
     }
 
     public function printPDF(LaporanKejadian $laporan)
-    {
-        $pdf = Pdf::loadView('laporan.pdf', ['laporan' => $laporan]);
+{
+    $laporan->load('lampiran');
+
+    try {
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.pdf', compact('laporan'));
         return $pdf->stream('laporan-kejadian-' . $laporan->id . '.pdf');
+    } catch (\Exception $e) {
+        // tampilkan isi error secara jelas
+        return response()->make(
+            "<h3>Terjadi error DomPDF:</h3><pre>{$e->getMessage()}</pre>",
+            500,
+            ['Content-Type' => 'text/html']
+        );
     }
+}
 }
