@@ -16,6 +16,9 @@ class LaporanKejadian extends Model
 
     protected $table = 'laporan_kejadian';
 
+    /**
+     * Kolom yang dapat diisi secara massal.
+     */
     protected $fillable = [
         'user_id',
         'status_laporan',
@@ -45,10 +48,14 @@ class LaporanKejadian extends Model
         'posisi_bujur',
         'tanggal_laporan',
         'isi_laporan',
+
+        // 🆕 Tambahan agar sesuai dengan input dari Flutter
+        'jenis_kecelakaan',
+        'pihak_terkait',
     ];
 
     /**
-     * Mendefinisikan relasi "hasMany" ke model Lampiran.
+     * Relasi: satu laporan memiliki banyak lampiran.
      */
     public function lampiran()
     {
@@ -56,31 +63,23 @@ class LaporanKejadian extends Model
     }
 
     /**
-     * PERBAIKAN: Tambahkan relasi "belongsTo" ke model User.
-     * Ini penting agar Laravel bisa mengambil data pelapor.
+     * Relasi: laporan dimiliki oleh satu user (pelapor).
      */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-    
-    // 3. TAMBAHKAN FUNGSI INI UNTUK MENGATUR LOGGER
+
+    /**
+     * Konfigurasi aktivitas log.
+     */
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            // Mencatat semua kolom di $fillable
-            ->logFillable() 
-            
-            // Hanya mencatat perubahan jika ada kolom yang benar-benar berubah
-            ->logOnlyDirty() 
-            
-            // Tidak menyimpan log jika hanya kolom 'updated_at' yang berubah
-            ->dontSubmitEmptyLogs() 
-            
-            // Memberi nama log agar mudah dibaca
-            ->useLogName('Laporan Kejadian') 
-            
-            // Memberi deskripsi untuk setiap aksi
+            ->logFillable()               // mencatat semua kolom fillable
+            ->logOnlyDirty()              // hanya mencatat perubahan nyata
+            ->dontSubmitEmptyLogs()       // tidak log jika hanya updated_at
+            ->useLogName('Laporan Kejadian')
             ->setDescriptionForEvent(fn(string $eventName) => "Laporan kejadian telah {$eventName}");
     }
 }

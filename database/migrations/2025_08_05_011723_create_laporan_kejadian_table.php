@@ -10,15 +10,19 @@ return new class extends Migration
     {
         Schema::create('laporan_kejadian', function (Blueprint $table) {
             $table->id();
+
+            // 🔹 Relasi ke tabel users
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+
+            // 🔹 Status laporan
             $table->enum('status_laporan', ['dikirim', 'diverifikasi', 'selesai'])->default('dikirim');
 
-            // Data Pelapor
+            // 🔹 Data Pelapor
             $table->string('nama_pelapor');
             $table->string('jabatan_pelapor');
             $table->string('telepon_pelapor');
 
-            // Data Kapal
+            // 🔹 Data Kapal
             $table->string('jenis_kapal');
             $table->string('nama_kapal');
             $table->string('nama_kapal_kedua')->nullable(); // Khusus Tug Boat
@@ -34,19 +38,24 @@ return new class extends Migration
             $table->string('agen_lokal');
             $table->string('kontak_agen');
 
-            // Data Pilot & Muatan
+            // 🔹 Data Pilot & Muatan
             $table->string('nama_pandu')->nullable();
             $table->string('nomor_register_pandu')->nullable();
             $table->text('jenis_muatan');
-            $table->string('jumlah_muatan'); // Menggunakan string untuk fleksibilitas (misal: "100 Ton", "5 Kontainer")
+            $table->string('jumlah_muatan'); // Gunakan string utk fleksibilitas ("100 Ton", "5 Kontainer")
             $table->integer('jumlah_penumpang');
 
-            // Posisi & Isi Laporan
+            // 🔹 Posisi & Isi Laporan
             $table->string('posisi_lintang');
             $table->string('posisi_bujur');
             $table->text('isi_laporan');
             $table->dateTime('tanggal_laporan');
 
+            // 🆕 Tambahan agar kompatibel dengan Flutter
+            $table->string('jenis_kecelakaan')->nullable();
+            $table->string('pihak_terkait')->nullable();
+
+            // 🔹 Timestamps
             $table->timestamps(); // created_at dan updated_at
         });
     }

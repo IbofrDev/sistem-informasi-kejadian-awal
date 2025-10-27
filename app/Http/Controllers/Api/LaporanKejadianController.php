@@ -12,40 +12,39 @@ use Carbon\Carbon;
 class LaporanKejadianController extends Controller
 {
     /**
-     * 🔹 Menampilkan halaman dashboard pelapor dengan fitur filter bulan dan tahun.
+     * 🔹 Menampilkan data laporan (untuk API dan web dashboard).
      */
     public function index(Request $request)
     {
-        // Ambil user yang login
         $user = auth()->user();
-
-        // Ambil parameter filter dari URL: ?bulan=9&tahun=2025
         $bulan = $request->query('bulan');
         $tahun = $request->query('tahun');
 
-        // Ambil semua laporan user
-        $laporanQuery = LaporanKejadian::where('user_id', $user->id);
+        $laporanQuery = LaporanKejadian::where('user_id', $user->id)
+            ->with(['lampiran', 'user']);
 
-        // Jika user memilih filter bulan dan tahun
         if ($bulan && $tahun) {
             $laporanQuery->whereMonth('tanggal_laporan', $bulan)
-                         ->whereYear('tanggal_laporan', $tahun);
+                ->whereYear('tanggal_laporan', $tahun);
         } elseif ($bulan) {
             $laporanQuery->whereMonth('tanggal_laporan', $bulan);
         } elseif ($tahun) {
             $laporanQuery->whereYear('tanggal_laporan', $tahun);
         }
 
-        // Urutkan berdasarkan tanggal_laporan terbaru
         $laporanKejadian = $laporanQuery->orderBy('tanggal_laporan', 'desc')->get();
 
-        // Dapatkan daftar tahun unik dari database (untuk dropdown filter)
+        // Jika request berasal dari API (Accept: application/json atau path /api/)
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json($laporanKejadian, 200);
+        }
+
+        // Web mode tetap berjalan
         $tahunList = LaporanKejadian::selectRaw('YEAR(tanggal_laporan) as tahun')
             ->distinct()
             ->orderBy('tahun', 'desc')
             ->pluck('tahun');
 
-        // Render ke view dashboard
         return view('dashboard', [
             'laporanKejadian' => $laporanKejadian,
             'bulan' => $bulan,
@@ -55,7 +54,7 @@ class LaporanKejadianController extends Controller
     }
 
     /**
-     * Menampilkan form untuk membuat laporan baru.
+     * Menampilkan form untuk membuat laporan baru (WEB ONLY)
      */
     public function create()
     {
@@ -64,6 +63,8 @@ class LaporanKejadianController extends Controller
 
     /**
      * Menyimpan laporan baru ke database.
+     * Mode API → kirim JSON
+     * Mode Web → redirect ke dashboard
      */
     public function store(Request $request)
     {
@@ -94,6 +95,9 @@ class LaporanKejadianController extends Controller
             'posisi_bujur'        => 'required|string|max:50',
             'tanggal_laporan'     => 'required|date',
             'isi_laporan'         => 'required|string',
+            // opsional field baru
+            'jenis_kecelakaan'    => 'nullable|string|max:255',
+            'pihak_terkait'       => 'nullable|string|max:255',
             'lampiran.*'          => 'nullable|file|mimes:jpg,jpeg,png,mp4,mov,avi,webm|max:20480',
         ]);
 
@@ -115,21 +119,38 @@ class LaporanKejadianController extends Controller
             }
         }
 
+        // Mode API → return JSON
+        if ($request->wantsJson() || $request->is('api/*')) {
+            $laporan->load('lampiran', 'user');
+            return response()->json([
+                'message' => 'Laporan kejadian berhasil dikirim!',
+                'laporan' => $laporan,
+            ], 201);
+        }
+
+        // Mode WEB → redirect ke dashboard
         return redirect()->route('dashboard')->with('success', 'Laporan kejadian berhasil dikirim!');
     }
 
     /**
      * Menampilkan detail laporan.
      */
-    public function show(LaporanKejadian $laporan)
+    public function show(LaporanKejadian $laporan, Request $request)
     {
         $this->authorize('view', $laporan);
-        $laporan->load('lampiran');
+        $laporan->load('lampiran', 'user');
+
+        // Mode API → JSON
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json($laporan, 200);
+        }
+
+        // Mode WEB → tampilkan view
         return view('laporan.show', compact('laporan'));
     }
 
     /**
-     * Menampilkan form edit laporan.
+     * Menampilkan form edit laporan (WEB ONLY)
      */
     public function edit(LaporanKejadian $laporan)
     {
@@ -171,9 +192,18 @@ class LaporanKejadianController extends Controller
             'posisi_bujur'        => 'required|string|max:50',
             'tanggal_laporan'     => 'required|date',
             'isi_laporan'         => 'required|string',
+            'jenis_kecelakaan'    => 'nullable|string|max:255',
+            'pihak_terkait'       => 'nullable|string|max:255',
         ]);
 
         $laporan->update($validatedData);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Laporan berhasil diperbarui',
+                'laporan' => $laporan->load('lampiran', 'user')
+            ], 200);
+        }
 
         return redirect()->route('dashboard')->with('success', 'Laporan berhasil diperbarui!');
     }
@@ -181,10 +211,15 @@ class LaporanKejadianController extends Controller
     /**
      * Hapus laporan.
      */
-    public function destroy(LaporanKejadian $laporan)
+    public function destroy(LaporanKejadian $laporan, Request $request)
     {
         $this->authorize('delete', $laporan);
         $laporan->delete();
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json(['message' => 'Laporan berhasil dihapus.'], 200);
+        }
+
         return redirect()->route('dashboard')->with('success', 'Laporan berhasil dihapus.');
     }
 
@@ -194,14 +229,8 @@ class LaporanKejadianController extends Controller
     public function print(LaporanKejadian $laporan)
     {
         $this->authorize('view', $laporan);
-
-        // Pastikan relasi diload jika ada
         $laporan->load('lampiran');
-
-        // Generate PDF
         $pdf = Pdf::loadView('laporan.pdf', ['laporan' => $laporan]);
-
-        // Stream PDF ke browser
         return $pdf->stream('laporan-kejadian-' . $laporan->id . '.pdf');
     }
 }
