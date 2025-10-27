@@ -45,11 +45,11 @@
     {{-- Card Informasi Laporan --}}
     <div class="card shadow-sm mb-4">
         <div class="card-header py-3">
-            <!-- PERBAIKAN WARNA: text-dark -->
             <h6 class="m-0 fw-bold text-dark">Informasi Laporan</h6>
         </div>
         <div class="card-body">
-            <table class="table table-borderless">
+            {{-- PERUBAHAN: Menghapus 'table-borderless' --}}
+            <table class="table"> 
                 <tbody>
                     <tr>
                         <td class="fw-bold text-dark" style="width: 20%;">Nama Pelapor</td>
@@ -79,13 +79,10 @@
                         <td class="fw-bold text-dark">GRT</td>
                         <td>: {{ $laporan->grt_kapal ?? 'N/A' }}</td>
                     </tr>
-                    
-                    <!-- PERBAIKAN: class="table-light" DIHAPUS DARI <tr> DI BAWAH INI -->
                     <tr>
                         <td class="fw-bold text-dark">Posisi Lintang</td>
                         <td>: {{ $laporan->posisi_lintang ?? 'N/A' }}</td>
                     </tr>
-                    
                     <tr>
                         <td class="fw-bold text-dark">Posisi Bujur</td>
                         <td>: {{ $laporan->posisi_bujur ?? 'N/A' }}</td>
@@ -114,7 +111,6 @@
     {{-- Card Isi Laporan --}}
     <div class="card shadow-sm mb-4">
         <div class="card-header py-3">
-            <!-- PERBAIKAN WARNA: text-dark -->
             <h6 class="m-0 fw-bold text-dark">Isi Laporan</h6>
         </div>
         <div class="card-body">
@@ -125,7 +121,6 @@
     {{-- Card Lampiran --}}
     <div class="card shadow-sm mb-4">
         <div class="card-header py-3">
-            <!-- PERBAIKAN WARNA: text-dark -->
             <h6 class="m-0 fw-bold text-dark">Lampiran</h6>
         </div>
         <div class="card-body">
@@ -153,10 +148,7 @@
     </div>
 
 
-    <!-- 
-      MODAL (POP-UP) UNTUK LOG HISTORI
-      Menggunakan ID dan class Bootstrap murni
-    -->
+    <!-- MODAL (POP-UP) UNTUK LOG HISTORI -->
     <div class="modal fade" id="logHistoryModal" tabindex="-1" aria-labelledby="logHistoryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <div class="modal-content">
@@ -165,32 +157,19 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    {{-- Konten Log --}}
                     <ul class="list-group list-group-flush">
-                        
                         @forelse($activities as $activity)
                             <li class="list-group-item border-bottom">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="fw-bold text-dark">
-                                        {{ $activity->causer->nama ?? 'Sistem' }}
-                                    </span>
-                                    <span class="text-muted" style="font-size: 0.85rem;">
-                                        {{ $activity->created_at->format('d M Y, H:i') }}
-                                    </span>
+                                    <span class="fw-bold text-dark">{{ $activity->causer->nama ?? 'Sistem' }}</span>
+                                    <span class="text-muted" style="font-size: 0.85rem;">{{ $activity->created_at->format('d M Y, H:i') }}</span>
                                 </div>
-                                
-                                <p class="text-muted mb-2" style="font-size: 0.9rem;">
-                                    {{ $activity->description }}
-                                </p>
-
+                                <p class="text-muted mb-2" style="font-size: 0.9rem;">{{ $activity->description }}</p>
                                 @if($activity->event === 'updated' && $activity->properties->has('old'))
                                     <div class="bg-light p-3 rounded" style="font-size: 0.85rem;">
                                         <strong>Perubahan:</strong>
                                         <ul class="list-unstyled mb-0 mt-1">
-                                            
                                             @foreach($activity->properties['old'] as $key => $value)
-                                                
-                                                {{-- 1. Kustomisasi Teks untuk 'status_laporan' --}}
                                                 @if ($key == 'status_laporan')
                                                     <li>
                                                         <i class="bi bi-check-circle-fill text-warning me-1"></i>
@@ -199,8 +178,6 @@
                                                         menjadi
                                                         <strong class="text-success">"{{ $activity->properties['attributes'][$key] }}"</strong>
                                                     </li>
-
-                                                {{-- 2. Kustomisasi Teks untuk 'isi_laporan' --}}
                                                 @elseif ($key == 'isi_laporan')
                                                     <li>
                                                         <i class="bi bi-pencil-fill text-info me-1"></i>
@@ -214,8 +191,6 @@
                                                             <div class="card-body py-2 px-2" style="white-space: pre-wrap;">{{ $activity->properties['attributes'][$key] }}</div>
                                                         </div>
                                                     </li>
-
-                                                {{-- 3. Tampilkan perubahan kolom lain (default) --}}
                                                 @else
                                                     <li>
                                                         <i class="bi bi-dot"></i>
@@ -225,7 +200,6 @@
                                                         <strong class="text-success">"{{ Str::limit($activity->properties['attributes'][$key], 50) }}"</strong>
                                                     </li>
                                                 @endif
-
                                             @endforeach
                                         </ul>
                                     </div>
@@ -236,7 +210,6 @@
                                 Belum ada riwayat aktivitas untuk laporan ini.
                             </li>
                         @endforelse
-
                     </ul>
                 </div>
                 <div class="modal-footer">
@@ -248,3 +221,4 @@
     <!-- AKHIR DARI MODAL -->
 
 @endsection
+

@@ -12,7 +12,7 @@ use Carbon\Carbon;
 class LaporanKejadianController extends Controller
 {
     /**
-     * 🔹 Menampilkan halaman dashboard pelapor dengan fitur filter bulan dan tahun.
+     * Menampilkan halaman dashboard pelapor dengan fitur filter bulan dan tahun.
      */
     public function index(Request $request)
     {
@@ -41,6 +41,7 @@ class LaporanKejadianController extends Controller
 
         // Dapatkan daftar tahun unik dari database (untuk dropdown filter)
         $tahunList = LaporanKejadian::selectRaw('YEAR(tanggal_laporan) as tahun')
+            ->whereNotNull('tanggal_laporan') // Pastikan tanggal tidak null
             ->distinct()
             ->orderBy('tahun', 'desc')
             ->pluck('tahun');
@@ -94,11 +95,12 @@ class LaporanKejadianController extends Controller
             'posisi_bujur'        => 'required|string|max:50',
             'tanggal_laporan'     => 'required|date',
             'isi_laporan'         => 'required|string',
-            'lampiran.*'          => 'nullable|file|mimes:jpg,jpeg,png,mp4,mov,avi,webm|max:20480',
+            'lampiran.*'          => 'nullable|file|mimes:jpg,jpeg,png,mp4,mov,avi,webm|max:20480', // 20MB
         ]);
 
         $dataToStore = $validatedData;
         $dataToStore['user_id'] = auth()->id();
+        // Status default 'dikirim' sudah diatur di migrasi
 
         $laporan = LaporanKejadian::create($dataToStore);
 
@@ -124,12 +126,34 @@ class LaporanKejadianController extends Controller
     public function show(LaporanKejadian $laporan)
     {
         $this->authorize('view', $laporan);
-        $laporan->load('lampiran');
+        $laporan->load('lampiran'); // Eager load lampiran
+
+        // 1. Ambil log aktivitas PELAPOR untuk modal
         $activities = Activity::forSubject($laporan)
-                          ->where('causer_id', auth()->id()) // <-- KUNCI FILTERNYA
-                          ->latest()
-                          ->get();
-        return view('laporan.show', compact('laporan', 'activities'));
+                              ->where('causer_id', auth()->id()) // Filter hanya user yg login
+                              ->latest()
+                              ->get();
+
+        // 2. Cari timestamp PERTAMA KALI status berubah jadi 'diverifikasi'
+        $verificationLog = Activity::forSubject($laporan)
+            ->where('event', 'updated')
+            // Cari log dimana 'attributes' mengandung 'status_laporan' = 'diverifikasi'
+            ->whereJsonContains('properties->attributes->status_laporan', 'diverifikasi')
+            ->orderBy('created_at', 'asc') // Urutkan dari yg terlama
+            ->first(); // Ambil yg pertama
+        $verifiedAt = $verificationLog ? $verificationLog->created_at : null;
+
+        // 3. Cari timestamp PERTAMA KALI status berubah jadi 'selesai'
+        $completionLog = Activity::forSubject($laporan)
+            ->where('event', 'updated')
+            // Cari log dimana 'attributes' mengandung 'status_laporan' = 'selesai'
+            ->whereJsonContains('properties->attributes->status_laporan', 'selesai')
+            ->orderBy('created_at', 'asc') // Urutkan dari yg terlama
+            ->first(); // Ambil yg pertama
+        $completedAt = $completionLog ? $completionLog->created_at : null;
+
+        // 4. Kirim semua data ke view
+        return view('laporan.show', compact('laporan', 'activities', 'verifiedAt', 'completedAt'));
     }
 
     /**
@@ -138,6 +162,10 @@ class LaporanKejadianController extends Controller
     public function edit(LaporanKejadian $laporan)
     {
         $this->authorize('update', $laporan);
+        // Pastikan status 'dikirim' untuk bisa edit (jika perlu)
+        // if ($laporan->status_laporan !== 'dikirim') {
+        //     return redirect()->route('dashboard')->with('error', 'Laporan tidak bisa diedit lagi.');
+        // }
         return view('laporan.edit', compact('laporan'));
     }
 
@@ -147,7 +175,12 @@ class LaporanKejadianController extends Controller
     public function update(Request $request, LaporanKejadian $laporan)
     {
         $this->authorize('update', $laporan);
+        // Pastikan status 'dikirim' untuk bisa update (jika perlu)
+        // if ($laporan->status_laporan !== 'dikirim') {
+        //     return redirect()->route('dashboard')->with('error', 'Laporan tidak bisa diupdate lagi.');
+        // }
 
+        // Validasi sama seperti store, kecuali lampiran
         $validatedData = $request->validate([
             'nama_pelapor'        => 'required|string|max:255',
             'jabatan_pelapor'     => 'required|string|max:255',
@@ -175,9 +208,12 @@ class LaporanKejadianController extends Controller
             'posisi_bujur'        => 'required|string|max:50',
             'tanggal_laporan'     => 'required|date',
             'isi_laporan'         => 'required|string',
+            // Validasi lampiran tidak di sini jika mau pakai logic hapus/tambah terpisah
         ]);
 
         $laporan->update($validatedData);
+
+        // Logic untuk update lampiran bisa ditambahkan di sini jika perlu
 
         return redirect()->route('dashboard')->with('success', 'Laporan berhasil diperbarui!');
     }
@@ -188,35 +224,45 @@ class LaporanKejadianController extends Controller
     public function destroy(LaporanKejadian $laporan)
     {
         $this->authorize('delete', $laporan);
-        $laporan->delete();
+        
+        // Hapus file lampiran dari storage sebelum hapus record DB
+        $laporan->load('lampiran');
+        foreach ($laporan->lampiran as $file) {
+             \Illuminate\Support\Facades\Storage::disk('public')->delete($file->path_file);
+        }
+        // Hapus record lampiran dan laporan (cascade delete di DB akan menghapus lampiran juga)
+        $laporan->delete(); 
+        
         return redirect()->route('dashboard')->with('success', 'Laporan berhasil dihapus.');
     }
 
     /**
-     * 🔹 Cetak laporan ke PDF.
+     * Cetak laporan ke PDF.
      */
     public function print(LaporanKejadian $laporan)
-{
-    try {
-        $this->authorize('view', $laporan);
-        $laporan->load('lampiran');
+    {
+        try {
+            $this->authorize('view', $laporan);
+            $laporan->load('lampiran');
 
-        \Log::info('Mulai buat PDF', ['laporan_id' => $laporan->id]);
+            \Log::info('Mulai buat PDF untuk Pelapor', ['laporan_id' => $laporan->id]);
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.pdf', ['laporan' => $laporan]);
+            // Menggunakan view yang sama dengan admin? Pastikan pathnya benar
+            $pdf = Pdf::loadView('laporan.pdf', ['laporan' => $laporan]); 
 
-        \Log::info('View PDF berhasil dibaca');
+            \Log::info('View PDF berhasil dibaca untuk Pelapor');
 
-        // tampilkan di tab baru
-        return $pdf->stream('laporan-kejadian-' . $laporan->id . '.pdf');
-    } catch (\Throwable $e) {
-        \Log::error('Gagal buat PDF: ' . $e->getMessage());
-        return response()->make(
-            '<h2>Terjadi kesalahan saat membuat PDF:</h2><pre>'
-            . e($e->getMessage()) . '</pre>',
-            500,
-            ['Content-Type' => 'text/html']
-        );
+            // tampilkan di tab baru
+            return $pdf->stream('laporan-kejadian-' . $laporan->id . '.pdf');
+
+        } catch (\Throwable $e) {
+            \Log::error('Gagal buat PDF untuk Pelapor: ' . $e->getMessage() . ' - File: ' . $e->getFile() . ' - Line: ' . $e->getLine());
+            return response()->make(
+                '<h2>Terjadi kesalahan saat membuat PDF:</h2><pre>'
+                . e($e->getMessage()) . '</pre><p>Silakan cek log aplikasi untuk detail.</p>',
+                500,
+                ['Content-Type' => 'text/html']
+            );
+        }
     }
-}
 }
