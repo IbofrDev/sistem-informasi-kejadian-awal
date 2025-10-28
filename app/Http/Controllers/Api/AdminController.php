@@ -65,34 +65,41 @@ class AdminController extends Controller
      */
     public function updateStatus(Request $request, LaporanKejadian $laporan)
     {
+        // 🧾 Validasi input status
         $validatedData = $request->validate([
             'status_laporan' => 'required|string|in:dikirim,diverifikasi,selesai',
         ]);
 
-        // 🔄 Perbarui status laporan terlebih dahulu
-        $laporan->update($validatedData);
+        // 📝 Set status laporan baru
+        $laporan->status_laporan = $validatedData['status_laporan'];
 
-        // 🕒 Otomatis isi kolom waktu berdasarkan status baru
-        switch ($validatedData['status_laporan']) {
+        // 🕒 Atur waktu otomatis sesuai status
+        switch ($laporan->status_laporan) {
             case 'dikirim':
+                // Isi waktu kirim hanya jika belum ada
                 if (empty($laporan->sent_at)) {
-                    $laporan->update(['sent_at' => now()]);
+                    $laporan->sent_at = now();
                 }
                 break;
+
             case 'diverifikasi':
-                $laporan->update(['verified_at' => now()]);
+                // Set waktu diverifikasi saat status berubah ke diverifikasi
+                $laporan->verified_at = now();
                 break;
+
             case 'selesai':
-                $laporan->update(['completed_at' => now()]);
+                // Set waktu selesai saat status berubah ke selesai
+                $laporan->completed_at = now();
                 break;
         }
 
-        // Refresh untuk memastikan data terbaru terkirim
-        $laporan->refresh();
+        // 💾 Simpan hanya sekali agar semua kolom tersimpan bersamaan
+        $laporan->save();
 
+        // 🔄 Kirim data terbaru ke Flutter
         return response()->json([
             'message' => 'Status laporan berhasil diperbarui.',
-            'data' => new LaporanKejadianResource($laporan),
+            'data' => new LaporanKejadianResource($laporan->fresh()),
         ], 200);
     }
 
@@ -145,9 +152,9 @@ class AdminController extends Controller
     public function updateUser(Request $request, User $user)
     {
         $validatedData = $request->validate([
-            'nama'         => 'required|string|max:255',
-            'jabatan'      => 'required|string|max:255',
-            'jenis_kapal'  => 'required|string|max:255',
+            'nama' => 'required|string|max:255',
+            'jabatan' => 'required|string|max:255',
+            'jenis_kapal' => 'required|string|max:255',
             'phone_number' => 'required|string|max:20',
         ]);
 

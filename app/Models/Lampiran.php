@@ -9,13 +9,16 @@ class Lampiran extends Model
 {
     use HasFactory;
 
-    // Mendefinisikan nama tabel secara eksplisit
     protected $table = 'lampiran';
 
-    // Mendefinisikan kolom yang boleh diisi
     protected $fillable = [
         'laporan_id',
         'tipe_file',
         'path_file',
     ];
+
+    public function laporan()
+    {
+        return $this->belongsTo(LaporanKejadian::class, 'laporan_id');
+    }
 }

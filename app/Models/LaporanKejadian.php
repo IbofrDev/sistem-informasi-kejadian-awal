@@ -71,6 +71,11 @@ class LaporanKejadian extends Model
         'pihak_terkait',
     ];
 
+    protected $casts = [
+        'sent_at' => 'datetime',
+        'verified_at' => 'datetime',
+        'completed_at' => 'datetime',
+    ];
     /**
      * Relasi: satu laporan memiliki banyak lampiran.
      */
