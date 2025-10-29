@@ -93,8 +93,7 @@
                     @endif
 
                     <input type="text" name="search" class="form-control form-control-sm me-2"
-                           placeholder="Cari ID, Nama Kapal, Jenis Kapal, atau Tanggal..."
-                           value="{{ request('search') }}">
+                        placeholder="Cari ID, Nama Kapal, Jenis Kapal, atau Tanggal..." value="{{ request('search') }}">
 
                     <button type="submit" class="btn btn-sm btn-primary me-1">
                         <i class="bi bi-search"></i>
@@ -107,19 +106,19 @@
 
                 <div class="btn-group" role="group" aria-label="Filter Status Laporan">
                     <a href="{{ route('admin.dashboard') }}"
-                       class="btn btn-sm {{ !$selectedStatus ? 'btn-primary' : 'btn-outline-primary' }}">
+                        class="btn btn-sm {{ !$selectedStatus ? 'btn-primary' : 'btn-outline-primary' }}">
                         Semua
                     </a>
                     <a href="{{ route('admin.dashboard', ['status' => 'dikirim']) }}"
-                       class="btn btn-sm {{ $selectedStatus == 'dikirim' ? 'btn-primary' : 'btn-outline-primary' }}">
+                        class="btn btn-sm {{ $selectedStatus == 'dikirim' ? 'btn-primary' : 'btn-outline-primary' }}">
                         Dikirim
                     </a>
                     <a href="{{ route('admin.dashboard', ['status' => 'diverifikasi']) }}"
-                       class="btn btn-sm {{ $selectedStatus == 'diverifikasi' ? 'btn-primary' : 'btn-outline-primary' }}">
+                        class="btn btn-sm {{ $selectedStatus == 'diverifikasi' ? 'btn-primary' : 'btn-outline-primary' }}">
                         Diverifikasi
                     </a>
                     <a href="{{ route('admin.dashboard', ['status' => 'selesai']) }}"
-                       class="btn btn-sm {{ $selectedStatus == 'selesai' ? 'btn-primary' : 'btn-outline-primary' }}">
+                        class="btn btn-sm {{ $selectedStatus == 'selesai' ? 'btn-primary' : 'btn-outline-primary' }}">
                         Selesai
                     </a>
                 </div>
@@ -159,38 +158,34 @@
                                 </td>
                                 <td class="text-center d-flex justify-content-center gap-1">
                                     <form action="{{ route('admin.laporan.updateStatus', $laporan->id) }}" method="POST"
-                                          class="d-inline">
+                                        class="form-status d-inline">
                                         @csrf
                                         @method('PATCH')
-                                        <select name="status" class="form-select form-select-sm d-inline-block w-auto"
-                                                onchange="this.form.submit()">
+                                        <select name="status" data-id="{{ $laporan->id }}"
+                                            class="form-select form-select-sm d-inline-block w-auto status-select">
                                             <option value="dikirim" {{ $laporan->status_laporan == 'dikirim' ? 'selected' : '' }}>
-                                                Dikirim
-                                            </option>
-                                            <option value="diverifikasi" {{ $laporan->status_laporan == 'diverifikasi' ? 'selected' : '' }}>
-                                                Diverifikasi
-                                            </option>
+                                                Dikirim</option>
+                                            <option value="diverifikasi" {{ $laporan->status_laporan == 'diverifikasi' ? 'selected' : '' }}>Diverifikasi</option>
                                             <option value="selesai" {{ $laporan->status_laporan == 'selesai' ? 'selected' : '' }}>
-                                                Selesai
-                                            </option>
+                                                Selesai</option>
                                         </select>
                                     </form>
 
                                     {{-- Tombol Lihat (#6C757D abu-abu Bootstrap) --}}
                                     <a href="{{ route('admin.laporan.show', $laporan->id) }}" class="btn btn-sm"
-                                       style="background-color:#6C757D; color:#fff;" title="Detail">
+                                        style="background-color:#6C757D; color:#fff;" title="Detail">
                                         <i class="bi bi-eye-fill"></i>
                                     </a>
 
                                     {{-- Tombol Cetak (#FFC107 kuning) --}}
                                     <a href="{{ route('admin.laporan.print', $laporan->id) }}" class="btn btn-sm"
-                                       style="background-color:#FFC107; color:#000;" title="Cetak PDF">
+                                        style="background-color:#FFC107; color:#000;" title="Cetak PDF">
                                         <i class="bi bi-printer-fill"></i>
                                     </a>
 
                                     {{-- Tombol Hapus (merah, default Bootstrap) --}}
                                     <form action="{{ route('admin.laporan.destroy', $laporan->id) }}" method="POST"
-                                          class="d-inline form-delete">
+                                        class="d-inline form-delete">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
@@ -252,4 +247,86 @@
             </div>
         </div>
     </div>
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const selects = document.querySelectorAll('.status-select');
+
+                selects.forEach(select => {
+                    select.addEventListener('change', function () {
+                        const form = this.closest('form');
+                        const formData = new FormData(form);
+
+                        fetch(form.action, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': form.querySelector('input[name=_token]').value,
+                                'X-HTTP-Method-Override': 'PATCH',
+                                'Accept': 'application/json',
+                            },
+                            body: formData
+                        })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    const newStatus = data.data.status;
+                                    let pesan = '';
+                                    let iconType = 'success';
+
+                                    // Tentukan pesan & ikon menyesuaikan status
+                                    switch (newStatus) {
+                                        case 'selesai':
+                                            pesan = 'Laporan telah selesai diproses.';
+                                            iconType = 'success';
+                                            break;
+                                        case 'diverifikasi':
+                                            pesan = 'Laporan berhasil diverifikasi.';
+                                            iconType = 'warning';
+                                            break;
+                                        default:
+                                            pesan = 'Status laporan berhasil diubah.';
+                                            iconType = 'info';
+                                    }
+
+                                    Swal.fire({
+                                        icon: iconType,
+                                        title: 'Berhasil!',
+                                        text: pesan,
+                                        confirmButtonText: 'OK',
+                                        confirmButtonColor: '#6C63FF',
+                                        customClass: {
+                                            popup: 'swal-wide',
+                                            title: 'fw-bold text-dark',
+                                        },
+                                    });
+
+                                    // 🟢 Update badge secara langsung di tabel
+                                    const row = select.closest('tr');
+                                    const badge = row.querySelector('.badge');
+
+                                    badge.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+                                    badge.className = 'badge';
+                                    if (newStatus === 'diverifikasi') {
+                                        badge.classList.add('bg-warning', 'text-dark');
+                                    } else if (newStatus === 'selesai') {
+                                        badge.classList.add('bg-success');
+                                    } else {
+                                        badge.classList.add('bg-secondary');
+                                    }
+
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal!',
+                                        text: 'Status laporan tidak dapat diubah.',
+                                        confirmButtonText: 'OK'
+                                    });
+                                }
+                            })
+                            .catch(err => console.error('Error:', err));
+                    });
+                });
+            });
+        </script>
+    @endpush
 @endsection

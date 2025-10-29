@@ -27,12 +27,12 @@ class DashboardController extends Controller
         if ($search) {
             $laporanQuery->where(function ($query) use ($search) {
                 $query->where('id', 'LIKE', "%$search%")
-                      ->orWhere('nama_kapal', 'LIKE', "%$search%")
-                      ->orWhere('jenis_kapal', 'LIKE', "%$search%")
-                      ->orWhereDate('tanggal_laporan', $search)
-                      ->orWhereHas('user', function ($userQuery) use ($search) {
-                          $userQuery->where('nama', 'LIKE', "%$search%");
-                      });
+                    ->orWhere('nama_kapal', 'LIKE', "%$search%")
+                    ->orWhere('jenis_kapal', 'LIKE', "%$search%")
+                    ->orWhereDate('tanggal_laporan', $search)
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('nama', 'LIKE', "%$search%");
+                    });
             });
         }
 
@@ -83,9 +83,9 @@ class DashboardController extends Controller
         $laporan->load('lampiran', 'user');
         $pelapor = $laporan->user;
         $activities = Activity::forSubject($laporan)
-                          ->with('causer')
-                          ->latest()
-                          ->get();
+            ->with('causer')
+            ->latest()
+            ->get();
 
         return view('admin.detail', compact('laporan', 'pelapor', 'activities'));
     }
@@ -93,27 +93,35 @@ class DashboardController extends Controller
     public function updateStatus(Request $request, LaporanKejadian $laporan)
     {
         $request->validate(['status' => 'required|string|in:dikirim,diverifikasi,selesai']);
+
         $laporan->status_laporan = $request->status;
-        $laporan->save();
 
-        $status = $laporan->status_laporan;
-        $message = 'Status laporan berhasil diperbarui.';
-        $icon = 'success';
-
-        if ($status === 'diverifikasi') {
-            $message = 'Laporan berhasil diverifikasi.';
-            $icon = 'warning';
-        } elseif ($status === 'selesai') {
-            $message = 'Laporan telah selesai diproses.';
-            $icon = 'success';
-        } elseif ($status === 'dikirim') {
-            $message = 'Laporan telah dikirim.';
-            $icon = 'info';
+        switch ($laporan->status_laporan) {
+            case 'dikirim':
+                if (empty($laporan->sent_at))
+                    $laporan->sent_at = now();
+                break;
+            case 'diverifikasi':
+                $laporan->verified_at = now();
+                break;
+            case 'selesai':
+                $laporan->completed_at = now();
+                break;
         }
 
-        return back()->with(['success' => $message, 'swal_icon' => $icon]);
-    }
+        $laporan->save();
 
+        // 🧩 balasan AJAX
+        return response()->json([
+            'success' => true,
+            'message' => 'Status berhasil diperbarui.',
+            'data' => [
+                'id' => $laporan->id,
+                'status' => $laporan->status_laporan,
+                'tanggal' => now()->format('d M Y H:i:s')
+            ]
+        ]);
+    }
     public function destroy(LaporanKejadian $laporan)
     {
         $laporan->load('lampiran');
@@ -149,19 +157,19 @@ class DashboardController extends Controller
     }
 
     public function printPDF(LaporanKejadian $laporan)
-{
-    $laporan->load('lampiran');
+    {
+        $laporan->load('lampiran');
 
-    try {
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.pdf', compact('laporan'));
-        return $pdf->stream('laporan-kejadian-' . $laporan->id . '.pdf');
-    } catch (\Exception $e) {
-        // tampilkan isi error secara jelas
-        return response()->make(
-            "<h3>Terjadi error DomPDF:</h3><pre>{$e->getMessage()}</pre>",
-            500,
-            ['Content-Type' => 'text/html']
-        );
+        try {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.pdf', compact('laporan'));
+            return $pdf->stream('laporan-kejadian-' . $laporan->id . '.pdf');
+        } catch (\Exception $e) {
+            // tampilkan isi error secara jelas
+            return response()->make(
+                "<h3>Terjadi error DomPDF:</h3><pre>{$e->getMessage()}</pre>",
+                500,
+                ['Content-Type' => 'text/html']
+            );
+        }
     }
-}
 }

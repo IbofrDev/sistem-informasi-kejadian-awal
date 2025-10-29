@@ -10,21 +10,17 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        // KITA PAKAI VERSI ANDA YANG LEBIH SPESIFIK (MENGGUNAKAN ->after())
         Schema::table('laporan_kejadian', function (Blueprint $table) {
-            $table->string('jenis_kecelakaan')->nullable()->after('posisi_bujur');
-            $table->string('pihak_terkait')->nullable()->after('jenis_kecelakaan');
+            $table->timestamp('sent_at')->nullable()->after('status_laporan');
+            $table->timestamp('verified_at')->nullable()->after('sent_at');
+            $table->timestamp('completed_at')->nullable()->after('verified_at');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        // FUNGSI down() ANDA SUDAH BENAR, HANYA TANDA KONFLIKNYA DIHAPUS
         Schema::table('laporan_kejadian', function (Blueprint $table) {
-            $table->dropColumn(['jenis_kecelakaan', 'pihak_terkait']);
+            $table->dropColumn(['sent_at', 'verified_at', 'completed_at']);
         });
     }
 };

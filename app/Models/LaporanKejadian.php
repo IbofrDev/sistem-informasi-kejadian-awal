@@ -22,28 +22,45 @@ class LaporanKejadian extends Model
     protected $fillable = [
         'user_id',
         'status_laporan',
+
+        // 🕒 Kolom waktu status laporan
+        'sent_at',
+        'verified_at',
+        'completed_at',
+
+        // 🔹 Data Pelapor
         'nama_pelapor',
         'jabatan_pelapor',
         'telepon_pelapor',
+
+        // 🔹 Data Kapal
         'jenis_kapal',
         'nama_kapal',
         'nama_kapal_kedua',
         'bendera_kapal',
         'grt_kapal',
         'imo_number',
+
+        // 🔹 Perjalanan
         'pelabuhan_asal',
         'waktu_berangkat',
         'pelabuhan_tujuan',
         'estimasi_tiba',
+
+        // 🔹 Pemilik & Agen
         'pemilik_kapal',
         'kontak_pemilik',
         'agen_lokal',
         'kontak_agen',
+
+        // 🔹 Pilot & Muatan
         'nama_pandu',
         'nomor_register_pandu',
         'jenis_muatan',
         'jumlah_muatan',
         'jumlah_penumpang',
+
+        // 🔹 Lokasi & Isi
         'posisi_lintang',
         'posisi_bujur',
         'tanggal_laporan',
@@ -54,6 +71,11 @@ class LaporanKejadian extends Model
         'pihak_terkait',
     ];
 
+    protected $casts = [
+        'sent_at' => 'datetime',
+        'verified_at' => 'datetime',
+        'completed_at' => 'datetime',
+    ];
     /**
      * Relasi: satu laporan memiliki banyak lampiran.
      */

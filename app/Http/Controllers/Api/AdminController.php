@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\LaporanKejadianResource;
 use App\Models\LaporanKejadian;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -45,30 +45,61 @@ class AdminController extends Controller
     }
 
     /**
-     * 📄 Menampilkan detail laporan spesifik untuk Admin (dengan relasi user dan lampiran).
+     * 📄 Menampilkan detail laporan spesifik untuk Admin
+     * (dengan relasi user dan lampiran).
+     * Menggunakan resource agar seluruh field dikirim utuh.
+     * Flutter memanggil endpoint: GET /api/admin/laporan/{id}
      */
     public function showLaporan(LaporanKejadian $laporan)
     {
         $laporan->load('lampiran', 'user');
+        $laporan->refresh(); // pastikan data terbaru masuk termasuk kolom waktu
 
-        return response()->json($laporan, 200);
+        // ✅ kirim seluruh field laporan dengan resource resmi
+        return new LaporanKejadianResource($laporan);
     }
 
     /**
      * ✏️ Memperbarui status laporan oleh admin.
+     * Sekaligus memberi tanda waktu kapan laporan diverifikasi / selesai.
      */
     public function updateStatus(Request $request, LaporanKejadian $laporan)
     {
+        // 🧾 Validasi input status
         $validatedData = $request->validate([
             'status_laporan' => 'required|string|in:dikirim,diverifikasi,selesai',
         ]);
 
-        $laporan->update($validatedData);
-        $laporan->refresh();
+        // 📝 Set status laporan baru
+        $laporan->status_laporan = $validatedData['status_laporan'];
 
+        // 🕒 Atur waktu otomatis sesuai status
+        switch ($laporan->status_laporan) {
+            case 'dikirim':
+                // Isi waktu kirim hanya jika belum ada
+                if (empty($laporan->sent_at)) {
+                    $laporan->sent_at = now();
+                }
+                break;
+
+            case 'diverifikasi':
+                // Set waktu diverifikasi saat status berubah ke diverifikasi
+                $laporan->verified_at = now();
+                break;
+
+            case 'selesai':
+                // Set waktu selesai saat status berubah ke selesai
+                $laporan->completed_at = now();
+                break;
+        }
+
+        // 💾 Simpan hanya sekali agar semua kolom tersimpan bersamaan
+        $laporan->save();
+
+        // 🔄 Kirim data terbaru ke Flutter
         return response()->json([
             'message' => 'Status laporan berhasil diperbarui.',
-            'data' => $laporan,
+            'data' => new LaporanKejadianResource($laporan->fresh()),
         ], 200);
     }
 
@@ -121,9 +152,9 @@ class AdminController extends Controller
     public function updateUser(Request $request, User $user)
     {
         $validatedData = $request->validate([
-            'nama'         => 'required|string|max:255',
-            'jabatan'      => 'required|string|max:255',
-            'jenis_kapal'  => 'required|string|max:255',
+            'nama' => 'required|string|max:255',
+            'jabatan' => 'required|string|max:255',
+            'jenis_kapal' => 'required|string|max:255',
             'phone_number' => 'required|string|max:20',
         ]);
 
