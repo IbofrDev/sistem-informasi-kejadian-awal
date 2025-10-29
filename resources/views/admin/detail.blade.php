@@ -8,10 +8,8 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0 text-gray-800">Detail Laporan Kejadian</h1>
         
-        <!-- Wrapper Tombol Aksi -->
         <div class="d-flex gap-2">
             
-            <!-- Tombol 1: Log Histori (Membuka Modal Bootstrap) -->
             <button 
                 type="button" 
                 class="btn btn-primary" 
@@ -21,12 +19,10 @@
                 <i class="bi bi-bell-fill me-1"></i> Log Histori
             </button>
 
-            <!-- Tombol 2: Cetak PDF -->
             <a href="{{ route('admin.laporan.print', $laporan->id) }}" target="_blank" class="btn btn-success">
                 <i class="bi bi-printer-fill me-1"></i> Cetak PDF
             </a>
 
-            <!-- Tombol 3: Hapus -->
             <form action="{{ route('admin.laporan.destroy', $laporan->id) }}" method="POST" class="d-inline form-delete">
                 @csrf
                 @method('DELETE')
@@ -35,7 +31,6 @@
                 </button>
             </form> 
 
-            <!-- Tombol 4: Kembali -->
             <a href="{{ url()->previous() }}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Kembali
             </a>
@@ -48,7 +43,6 @@
             <h6 class="m-0 fw-bold text-dark">Informasi Laporan</h6>
         </div>
         <div class="card-body">
-            {{-- PERUBAHAN: Menghapus 'table-borderless' --}}
             <table class="table"> 
                 <tbody>
                     <tr>
@@ -91,6 +85,22 @@
                         <td class="fw-bold text-dark">Tanggal Kejadian</td>
                         <td>: {{ \Carbon\Carbon::parse($laporan->tanggal_laporan)->isoFormat('D MMMM YYYY, HH:mm') }}</td>
                     </tr>
+
+                    {{-- =================================== --}}
+                    {{-- ==        KODE YANG DITAMBAHKAN      == --}}
+                    {{-- =================================== --}}
+                    <tr>
+                        <td class="fw-bold text-dark">Jenis Kecelakaan</td>
+                        <td>: {{ $laporan->jenis_kecelakaan ?? 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-dark">Pihak Terkait</td>
+                        <td>: {{ $laporan->pihak_terkait ?? 'N/A' }}</td>
+                    </tr>
+                    {{-- =================================== --}}
+                    {{-- ==      AKHIR DARI KODE BARU       == --}}
+                    {{-- =================================== --}}
+
                     <tr>
                         <td class="fw-bold text-dark">Status</td>
                         <td>:
@@ -148,7 +158,6 @@
     </div>
 
 
-    <!-- MODAL (POP-UP) UNTUK LOG HISTORI -->
     <div class="modal fade" id="logHistoryModal" tabindex="-1" aria-labelledby="logHistoryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <div class="modal-content">
@@ -218,7 +227,4 @@
             </div>
         </div>
     </div>
-    <!-- AKHIR DARI MODAL -->
-
-@endsection
-
+    @endsection
