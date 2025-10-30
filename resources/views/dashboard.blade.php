@@ -56,7 +56,7 @@
     {{-- Tabel Riwayat Laporan --}}
     <div class="card shadow-sm">
         <div class="card-header">
-            <h6 class="m-0 fw-bold text-primary">Riwayat Laporan Anda</h6>
+            <h6 class="m-0 fw-bold text-dark">Riwayat Laporan Anda</h6>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -90,13 +90,13 @@
                                     @endif
                                 </td>
                                 <td class="text-center d-flex justify-content-center gap-1">
-                                    {{-- 🔹 Tombol Detail --}}
+                                    
+                                    {{-- 🔹 Tombol Detail (Diubah menjadi Abu-abu) --}}
                                     <a href="{{ route('laporan.show', $laporan->id) }}" 
-                                       class="btn btn-sm btn-info" title="Lihat Detail">
+                                       class="btn btn-sm btn-secondary" title="Lihat Detail">
                                         <i class="bi bi-eye-fill"></i>
                                     </a>
-
-                                    {{-- 🔹 Tombol Edit (hanya kalau belum selesai) --}}
+                                    {{-- 🔹 Tombol Edit (Tetap btn-warning / Kuning) --}}
                                     @if($laporan->status_laporan != 'selesai')
                                         <a href="{{ route('laporan.edit', $laporan->id) }}" 
                                            class="btn btn-sm btn-warning" title="Edit Laporan">
@@ -104,10 +104,10 @@
                                         </a>
                                     @endif
 
-                                    {{-- 🔹 Tombol Cetak PDF (dengan target _blank agar langsung buka tab baru) --}}
+                                    {{-- 🔹 Tombol Cetak PDF (Tetap btn-success / Hijau) --}}
                                     <a href="{{ route('laporan.print', $laporan->id) }}" 
                                        target="_blank"
-                                       class="btn btn-sm btn-secondary"
+                                       class="btn btn-sm btn-success"
                                        title="Cetak PDF">
                                         <i class="bi bi-printer-fill"></i>
                                     </a>

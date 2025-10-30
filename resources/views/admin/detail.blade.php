@@ -85,7 +85,9 @@
       <div class="col-lg-6 col-md-12">
         <table class="table table-borderless mb-0">
           <tbody>
-            <tr><td colspan="2" class="fw-bold text-primary">Perjalanan</td></tr>
+            {{-- ▼▼▼ BARIS INI DIUBAH ▼▼▼ --}}
+            <tr><td colspan="2" class="fw-bold"><span style="background-color: #E9C217; padding: 2px 5px; border-radius: 3px;">Perjalanan</span></td></tr>
+            {{-- ▲▲▲ BARIS INI DIUBAH ▲▲▲ --}}
             <tr><td class="fw-bold">Pelabuhan Asal</td><td>: {{ $laporan->pelabuhan_asal ?: '-' }}</td></tr>
             <tr><td class="fw-bold">Waktu Berangkat</td>
                 <td>: {{ $laporan->waktu_berangkat?->translatedFormat('d F Y, H:i') ?? '-' }}</td>
@@ -126,7 +128,9 @@
       <div class="col-lg-6 col-md-12">
         <table class="table table-borderless mb-0">
           <tbody>
-            <tr><td class="fw-bold text-primary" colspan="2">Muatan</td></tr>
+            {{-- ▼▼▼ BARIS INI DIUBAH ▼▼▼ --}}
+            <tr><td colspan="2" class="fw-bold"><span style="background-color: #E9C217; padding: 2px 5px; border-radius: 3px;">Muatan</span></td></tr>
+            {{-- ▲▲▲ BARIS INI DIUBAH ▲▲▲ --}}
             <tr><td class="fw-bold">Jenis Muatan</td><td>: {{ $laporan->jenis_muatan ?? '-' }}</td></tr>
             <tr><td class="fw-bold">Jumlah Muatan</td><td>: {{ $laporan->jumlah_muatan ?? '-' }}</td></tr>
             <tr><td class="fw-bold">Jumlah Penumpang</td><td>: {{ $laporan->jumlah_penumpang ?? '-' }}</td></tr>
@@ -166,22 +170,19 @@
                     </tr>
                 </tbody>
             </table>
-
-            {{-- 
-              BAGIAN ISI LAPORAN SUDAH DIPINDAHKAN DARI SINI
-            --}}
-
         </div>
     </div>
 
+    {{-- KARTU BARU UNTUK ISI LAPORAN --}}
     <div class="card shadow-sm mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 fw-bold text-dark">Isi Laporan</h6>
+            <h6 class="m-0 fw-bold text-dark">Isi Laporan (Incident Report)</h6>
         </div>
         <div class="card-body">
             <p style="white-space: pre-wrap;">{{ $laporan->isi_laporan }}</p>
         </div>
     </div>
+
     {{-- LAMPIRAN FOTO & VIDEO --}}
     <div class="card shadow-sm mb-4">
         <div class="card-header py-3">
@@ -254,7 +255,6 @@
                                                             <div class="card-body py-2 px-2" style="white-space:pre-wrap;">{{ $activity->properties['attributes'][$key] }}</div>
                                                         </div>
                                                     </li>
-                    
                                                 @else
                                                     <li><i class="bi bi-dot"></i>
                                                         Kolom <code>{{ $key }}</code> diubah dari

@@ -338,7 +338,8 @@
             const defaultLng = 114.590;
 
             map = L.map('map').setView([defaultLat, defaultLng], 10); // Zoom awal 10
-            L.tileLayer('https{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+// ...
                 maxZoom: 19,
                 attribution: '© OpenStreetMap'
             }).addTo(map);

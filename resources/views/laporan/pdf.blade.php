@@ -18,8 +18,11 @@
             margin: 0 auto;
         }
 
+        /* ========================================================== */
+        /* ==          INI BAGIAN YANG SAYA KEMBALIKAN (FIXED)       == */
+        /* ========================================================== */
         .header {
-            text-align: center;
+            text-align: center; /* Teks kembali ke tengah */
             margin-bottom: 20px;
             border-bottom: 2px solid #333;
             padding-bottom: 10px;
@@ -38,8 +41,11 @@
         .logo {
             width: 70px;
             height: auto;
-            margin-bottom: 10px;
+            margin-bottom: 10px; /* Beri jarak antara logo dan teks di bawahnya */
         }
+        /* ========================================================== */
+        /* ==                    AKHIR PERUBAHAN CSS                   == */
+        /* ========================================================== */
 
         .main-table {
             width: 100%;
@@ -101,10 +107,10 @@
             @if(file_exists($logoPath))
                 <img src="{{ $logoPath }}" alt="Logo KSOP" class="logo">
             @endif
+            {{-- Teks kembali diletakkan di bawah logo --}}
             <h1>LAPORAN KECELAKAAN KAPAL</h1>
             <p>Sistem Informasi Kecelakaan Kapal - KSOP Kelas I Banjarmasin</p>
         </div>
-
         {{-- Isi Tabel Utama --}}
         <table class="main-table">
             <tr>
