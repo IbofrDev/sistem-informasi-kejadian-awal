@@ -101,7 +101,7 @@
   </div>
 </div>
 
-  {{-- PEMILIK, AGEN, PILOT & MUATAN --}}
+ {{-- PEMILIK, AGEN, PILOT & MUATAN --}}
 <div class="card shadow-sm mb-4">
   <div class="card-header py-3">
     <h6 class="m-0 fw-bold text-dark">Pemilik, Agen, Pandu &amp; Muatan</h6>
@@ -167,13 +167,21 @@
                 </tbody>
             </table>
 
-            <div class="mt-3">
-                <h6 class="fw-bold text-dark">Isi Laporan:</h6>
-                <p style="white-space: pre-wrap;">{{ $laporan->isi_laporan }}</p>
-            </div>
+            {{-- 
+              BAGIAN ISI LAPORAN SUDAH DIPINDAHKAN DARI SINI
+            --}}
+
         </div>
     </div>
 
+    <div class="card shadow-sm mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 fw-bold text-dark">Isi Laporan</h6>
+        </div>
+        <div class="card-body">
+            <p style="white-space: pre-wrap;">{{ $laporan->isi_laporan }}</p>
+        </div>
+    </div>
     {{-- LAMPIRAN FOTO & VIDEO --}}
     <div class="card shadow-sm mb-4">
         <div class="card-header py-3">
@@ -246,6 +254,7 @@
                                                             <div class="card-body py-2 px-2" style="white-space:pre-wrap;">{{ $activity->properties['attributes'][$key] }}</div>
                                                         </div>
                                                     </li>
+                    
                                                 @else
                                                     <li><i class="bi bi-dot"></i>
                                                         Kolom <code>{{ $key }}</code> diubah dari
