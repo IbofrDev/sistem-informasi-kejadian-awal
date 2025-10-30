@@ -15,7 +15,7 @@
             crossorigin=""></script>
 
     {{-- Alpine.js (jika belum di-include global via app.js) --}}
-    {{-- <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script> --}}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <div class="card shadow-sm">
         <div class="card-header bg-light py-3">
@@ -61,15 +61,15 @@
         <div class="card-body p-4">
             {{-- Menampilkan error validasi global --}}
              @if ($errors->any())
-                <div class="alert alert-danger mb-4">
-                    <h5 class="alert-heading">Terjadi Kesalahan Validasi!</h5>
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+                 <div class="alert alert-danger mb-4">
+                     <h5 class="alert-heading">Terjadi Kesalahan Validasi!</h5>
+                     <ul class="mb-0">
+                         @foreach ($errors->all() as $error)
+                             <li>{{ $error }}</li>
+                         @endforeach
+                     </ul>
+                 </div>
+             @endif
 
             <form action="{{ route('laporan.store') }}" method="POST" enctype="multipart/form-data" id="report-form">
                 @csrf
@@ -121,17 +121,28 @@
                             <label for="jenis_kecelakaan" class="form-label">Jenis Kecelakaan Kapal <span class="text-danger">*</span></label>
                             <select class="form-select @error('jenis_kecelakaan') is-invalid @enderror"
                                     id="jenis_kecelakaan" name="jenis_kecelakaan"
-                                    x-model="selectedJenisKecelakaan" required>
+                                    x-model="selectedJenisKecelakaan" 
+                                    
+                                    {{-- INI ADALAH MODIFIKASI YANG DITAMBAHKAN --}}
+                                    @change="if (selectedJenisKecelakaan !== 'Kecelakaan Antar Kapal (Tabrakan)') {
+                                        const pihakTerkaitInput = document.getElementById('pihak_terkait');
+                                        if (pihakTerkaitInput) pihakTerkaitInput.value = '';
+                                    }"
+                                    {{-- AKHIR MODIFIKASI --}}
+                                    
+                                    required>
                                 <option value="" disabled {{ old('jenis_kecelakaan') ? '' : 'selected' }}>-- Pilih Jenis Kecelakaan --</option>
+                                
                                 @php
                                     $jenisKecelakaanOptions = [
+                                        'Kecelakaan Tunggal',
                                         'Kecelakaan Antar Kapal (Tabrakan)',
-                                        'Kandas',
-                                        'Kebakaran/Ledakan',
-                                        'Tenggelam',
-                                        'Kerusakan Mesin/Kemudi',
-                                        'Cuaca Buruk',
-                                        'Lainnya',
+                                        'Kecelakaan di Pelabuhan / Saat Sandar',
+                                        'Kecelakaan karena Cuaca Ekstrem / Alam',
+                                        'Kapal Terbalik / Tenggelam',
+                                        'Kehilangan Kendali (Mesin / Kemudi Rusak)',
+                                        'Kecelakaan dengan Fasilitas / Masyarakat',
+                                        'Insiden Muatan / Tumpahan Bahan Berbahaya',
                                     ];
                                 @endphp
                                 @foreach ($jenisKecelakaanOptions as $option)
@@ -327,7 +338,7 @@
             const defaultLng = 114.590;
 
             map = L.map('map').setView([defaultLat, defaultLng], 10); // Zoom awal 10
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            L.tileLayer('https{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
                 attribution: '© OpenStreetMap'
             }).addTo(map);
@@ -339,13 +350,13 @@
             function decimalToDMS(decimal, isLng) {
                 // ... (kode decimalToDMS tidak berubah) ...
                  const dir = isLng ? (decimal >= 0 ? 'E' : 'W') : (decimal >= 0 ? 'N' : 'S');
-                const absDecimal = Math.abs(decimal);
-                const degrees = Math.floor(absDecimal);
-                const minutesFloat = (absDecimal - degrees) * 60;
-                const minutes = Math.floor(minutesFloat);
-                const seconds = ((minutesFloat - minutes) * 60).toFixed(1);
-                // Pastikan formatnya konsisten untuk parsing
-                return `${degrees}° ${minutes}' ${seconds}" ${dir}`;
+                 const absDecimal = Math.abs(decimal);
+                 const degrees = Math.floor(absDecimal);
+                 const minutesFloat = (absDecimal - degrees) * 60;
+                 const minutes = Math.floor(minutesFloat);
+                 const seconds = ((minutesFloat - minutes) * 60).toFixed(1);
+                 // Pastikan formatnya konsisten untuk parsing
+                 return `${degrees}° ${minutes}' ${seconds}" ${dir}`;
             }
 
             function dmsToDecimal(dmsString) {
@@ -382,8 +393,8 @@
                     const validLng = Math.max(-180, Math.min(180, lonDecimal));
 
                     if (validLat !== latDecimal || validLng !== lonDecimal) {
-                       console.warn("Koordinat di luar batas, disesuaikan.");
-                       updateInputsFromMap(validLat, validLng); // Update input jika disesuaikan
+                         console.warn("Koordinat di luar batas, disesuaikan.");
+                         updateInputsFromMap(validLat, validLng); // Update input jika disesuaikan
                     }
 
                     const newLatLng = [validLat, validLng];
@@ -394,13 +405,13 @@
                 }
             }
              // Update input ketika marker digeser atau map diklik
-            function updateInputsFromMap(lat, lng) {
-                // Pembulatan sebelum konversi ke DMS
-                const roundedLat = parseFloat(lat.toFixed(6));
-                const roundedLng = parseFloat(lng.toFixed(6));
-                latInput.value = decimalToDMS(roundedLat, false);
-                lonInput.value = decimalToDMS(roundedLng, true);
-            }
+             function updateInputsFromMap(lat, lng) {
+                 // Pembulatan sebelum konversi ke DMS
+                 const roundedLat = parseFloat(lat.toFixed(6));
+                 const roundedLng = parseFloat(lng.toFixed(6));
+                 latInput.value = decimalToDMS(roundedLat, false);
+                 lonInput.value = decimalToDMS(roundedLng, true);
+             }
 
             // Event listener klik map
             map.on('click', function(e) {
@@ -411,8 +422,8 @@
 
              // Event listener drag marker
              marker.on('dragend', function(e) {
-                const { lat, lng } = e.target.getLatLng();
-                 updateInputsFromMap(lat, lng);
+                 const { lat, lng } = e.target.getLatLng();
+                  updateInputsFromMap(lat, lng);
              });
 
             // Event listener tombol lokasi saat ini
