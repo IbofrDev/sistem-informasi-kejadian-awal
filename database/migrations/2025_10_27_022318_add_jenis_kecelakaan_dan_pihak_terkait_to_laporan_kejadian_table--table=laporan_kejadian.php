@@ -10,9 +10,10 @@ return new class extends Migration {
      */
     public function up(): void
     {
+        // KITA PAKAI VERSI ANDA YANG LEBIH SPESIFIK (MENGGUNAKAN ->after())
         Schema::table('laporan_kejadian', function (Blueprint $table) {
-            $table->string('jenis_kecelakaan')->nullable();
-            $table->string('pihak_terkait')->nullable();
+            $table->string('jenis_kecelakaan')->nullable()->after('posisi_bujur');
+            $table->string('pihak_terkait')->nullable()->after('jenis_kecelakaan');
         });
     }
 
@@ -21,6 +22,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
+        // FUNGSI down() ANDA SUDAH BENAR, HANYA TANDA KONFLIKNYA DIHAPUS
         Schema::table('laporan_kejadian', function (Blueprint $table) {
             $table->dropColumn(['jenis_kecelakaan', 'pihak_terkait']);
         });

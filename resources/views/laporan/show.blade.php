@@ -6,19 +6,19 @@
 @section('content')
     {{-- Header Halaman dengan Tombol Aksi --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
-         <h1 class="h3 mb-0 text-gray-800">Detail Laporan Kejadian</h1>
-         <div class="d-flex gap-2">
+        <h1 class="h3 mb-0 text-gray-800">Detail Laporan Kejadian</h1>
+        <div class="d-flex gap-2">
             @if(Auth::user()->role == 'admin')
-                 {{-- Tombol untuk Admin (jika perlu) --}}
-                 <button type="button" class="btn btn-sm btn-primary" title="Lihat Log Histori" data-bs-toggle="modal" data-bs-target="#logHistoryModal"><i class="bi bi-bell-fill me-1"></i> Log Histori</button>
-                 <a href="{{ route('admin.laporan.print', $laporan->id) }}" target="_blank" class="btn btn-sm btn-success"><i class="bi bi-printer-fill me-1"></i> Cetak PDF</a>
-                 <form action="{{ route('admin.laporan.destroy', $laporan->id) }}" method="POST" class="d-inline form-delete"> @csrf @method('DELETE') <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash me-1"></i> Hapus</button></form> 
-                 <a href="{{ route('admin.dashboard') }}" class="btn btn-sm btn-secondary"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
+                {{-- Tombol untuk Admin (jika perlu) --}}
+                <button type="button" class="btn btn-sm btn-primary" title="Lihat Log Histori" data-bs-toggle="modal" data-bs-target="#logHistoryModal"><i class="bi bi-bell-fill me-1"></i> Log Histori</button>
+                <a href="{{ route('admin.laporan.print', $laporan->id) }}" target="_blank" class="btn btn-sm btn-success"><i class="bi bi-printer-fill me-1"></i> Cetak PDF</a>
+                <form action="{{ route('admin.laporan.destroy', $laporan->id) }}" method="POST" class="d-inline form-delete"> @csrf @method('DELETE') <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash me-1"></i> Hapus</button></form> 
+                <a href="{{ route('admin.dashboard') }}" class="btn btn-sm btn-secondary"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
             @else
-                 {{-- Tombol untuk Pelapor --}}
-                 <button type="button" class="btn btn-primary" title="Lihat Log Histori Saya" data-bs-toggle="modal" data-bs-target="#logHistoryModal"><i class="bi bi-bell-fill me-1"></i> Log Histori</button>
-                 <a href="{{ route('laporan.print', $laporan->id) }}" target="_blank" class="btn btn-success"><i class="bi bi-printer-fill me-1"></i> Cetak PDF</a>
-                 <a href="{{ route('dashboard') }}" class="btn btn-secondary"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
+                {{-- Tombol untuk Pelapor --}}
+                <button type="button" class="btn btn-primary" title="Lihat Log Histori Saya" data-bs-toggle="modal" data-bs-target="#logHistoryModal"><i class="bi bi-bell-fill me-1"></i> Log Histori</button>
+                <a href="{{ route('laporan.print', $laporan->id) }}" target="_blank" class="btn btn-success"><i class="bi bi-printer-fill me-1"></i> Cetak PDF</a>
+                <a href="{{ route('dashboard') }}" class="btn btn-secondary"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
             @endif
         </div>
     </div>
@@ -58,22 +58,22 @@
                         $verifikasiTimestamp = '-';
 
                         if ($verifiedAt) { // Jika sudah diverifikasi (ada timestamp)
-                             if ($laporan->status_laporan == 'diverifikasi') {
-                                 $verifikasiClass = 'text-warning'; // Kuning jika aktif
-                                 $verifikasiIcon = 'bi-check-circle-fill';
-                             } elseif ($laporan->status_laporan == 'selesai') {
-                                 $verifikasiClass = 'text-muted'; // Abu-abu jika sudah lewat
-                                 $verifikasiIcon = 'bi-check-circle-fill';
-                             }
+                            if ($laporan->status_laporan == 'diverifikasi') {
+                                $verifikasiClass = 'text-warning'; // Kuning jika aktif
+                                $verifikasiIcon = 'bi-check-circle-fill';
+                            } elseif ($laporan->status_laporan == 'selesai') {
+                                $verifikasiClass = 'text-muted'; // Abu-abu jika sudah lewat
+                                $verifikasiIcon = 'bi-check-circle-fill';
+                            }
                             $verifikasiTimestamp = $verifiedAt->translatedFormat('d M Y, H:i');
                         } elseif ($laporan->status_laporan == 'diverifikasi') {
-                             // Kasus aneh jika status diverifikasi tapi log tidak ada, tampilkan saja
-                             $verifikasiClass = 'text-warning';
-                             $verifikasiIcon = 'bi-check-circle-fill';
-                             $verifikasiTimestamp = 'Status saat ini';
+                            // Kasus aneh jika status diverifikasi tapi log tidak ada, tampilkan saja
+                            $verifikasiClass = 'text-warning';
+                            $verifikasiIcon = 'bi-check-circle-fill';
+                            $verifikasiTimestamp = 'Status saat ini';
                         }
                     @endphp
-                     <div class="{{ $verifikasiClass }}">
+                    <div class="{{ $verifikasiClass }}">
                         <i class="bi {{ $verifikasiIcon }} fs-2 mb-2 d-block"></i>
                         <h5 class="fw-bold">Diverifikasi</h5>
                         <small class="d-block">{{ $verifikasiTimestamp }}</small>
@@ -82,7 +82,7 @@
 
                 {{-- Kolom 3: Selesai --}}
                 <div class="col-md-4">
-                     @php
+                    @php
                         $selesaiClass = 'text-muted'; // Default abu-abu
                         $selesaiIcon = 'bi-hourglass-split'; // Icon default (belum)
                         $selesaiTimestamp = '-';
@@ -92,10 +92,10 @@
                             $selesaiIcon = 'bi-check-all'; // Icon berbeda untuk selesai
                             $selesaiTimestamp = $completedAt->translatedFormat('d M Y, H:i');
                         } elseif ($laporan->status_laporan == 'selesai' && !$completedAt) {
-                             // Kasus aneh jika status selesai tapi log tidak ada
-                             $selesaiClass = 'text-success';
-                             $selesaiIcon = 'bi-check-all';
-                             $selesaiTimestamp = 'Status saat ini';
+                            // Kasus aneh jika status selesai tapi log tidak ada
+                            $selesaiClass = 'text-success';
+                            $selesaiIcon = 'bi-check-all';
+                            $selesaiTimestamp = 'Status saat ini';
                         }
                     @endphp
                     <div class="{{ $selesaiClass }}">
@@ -141,6 +141,14 @@
                         <td class="fw-bold text-dark">Jenis Kapal</td>
                         <td>: {{ $laporan->jenis_kapal ?? 'N/A' }}</td>
                     </tr>
+                    
+                    {{-- KODE BARU DIMASUKKAN DI SINI --}}
+                    <tr>
+                        <td class="fw-bold text-dark">Jenis Kecelakaan</td>
+                        <td>: {{ $laporan->jenis_kecelakaan ?? 'N/A' }}</td>
+                    </tr>
+                    {{-- AKHIR KODE BARU --}}
+
                     <tr>
                         <td class="fw-bold text-dark">Bendera</td>
                         <td>: {{ $laporan->bendera_kapal ?? 'N/A' }}</td>
@@ -207,9 +215,9 @@
                                 </a>
                             @else
                                 <video controls class="card-img-top rounded-top" style="height: 180px; width: 100%; object-fit: cover;">
-                                     <source src="{{ asset('storage/' . $file->path_file) }}" type="{{ mime_content_type(storage_path('app/public/' . $file->path_file)) }}">
-                                     Browser Anda tidak mendukung tag video.
-                                 </video>
+                                    <source src="{{ asset('storage/' . $file->path_file) }}" type="{{ mime_content_type(storage_path('app/public/' . $file->path_file)) }}">
+                                    Browser Anda tidak mendukung tag video.
+                                </video>
                             @endif
                         </div>
                     </div>
@@ -220,7 +228,6 @@
     @endif
 
 
-    <!-- MODAL (POP-UP) UNTUK LOG HISTORI PELAPOR -->
     <div class="modal fade" id="logHistoryModal" tabindex="-1" aria-labelledby="logHistoryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <div class="modal-content">
@@ -282,6 +289,4 @@
             </div>
         </div>
     </div>
-    <!-- AKHIR DARI MODAL -->
-
-@endsection
+    @endsection

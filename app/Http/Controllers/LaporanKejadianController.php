@@ -2,21 +2,37 @@
 
 namespace App\Http\Controllers;
 
+// 🔽 PASTIKAN SEMUA USE STATEMENT INI ADA 🔽
 use Spatie\Activitylog\Models\Activity;
 use Illuminate\Http\Request;
-use App\Models\LaporanKejadian;
-use App\Models\Lampiran;    
+use App\Models\LaporanKejadian; // <-- PASTIKAN INI ADA
+use App\Models\Lampiran;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
+// 🔼 AKHIR DARI USE STATEMENTS 🔼
 
 class LaporanKejadianController extends Controller
 {
+    // Opsi untuk dropdown Jenis Kecelakaan
+    // Anda bisa memindahkannya ke tempat lain (misal: config file) jika perlu
+    protected $jenisKecelakaanOptions = [
+        'Kecelakaan Antar Kapal (Tabrakan)',
+        'Kandas',
+        'Kebakaran/Ledakan',
+        'Tenggelam',
+        'Kerusakan Mesin/Kemudi',
+        'Cuaca Buruk',
+        'Lainnya',
+    ];
+
+
     /**
      * Menampilkan halaman dashboard pelapor dengan fitur filter bulan dan tahun.
      */
     public function index(Request $request)
     {
-        // Ambil user yang login
+         // Ambil user yang login
         $user = auth()->user();
 
         // Ambil parameter filter dari URL: ?bulan=9&tahun=2025
@@ -60,7 +76,9 @@ class LaporanKejadianController extends Controller
      */
     public function create()
     {
-        return view('laporan.create');
+         // Mengirim opsi dropdown ke view (opsional, bisa juga hardcode di view)
+        // return view('laporan.create', ['jenisKecelakaanOptions' => $this->jenisKecelakaanOptions]);
+        return view('laporan.create'); // Kita hardcode saja di view agar lebih simpel
     }
 
     /**
@@ -68,7 +86,9 @@ class LaporanKejadianController extends Controller
      */
     public function store(Request $request)
     {
+        // 🔽 PERBARUI VALIDASI DI SINI 🔽
         $validatedData = $request->validate([
+            // --- Data Step 1 & 2 ---
             'nama_pelapor'        => 'required|string|max:255',
             'jabatan_pelapor'     => 'required|string|max:255',
             'telepon_pelapor'     => 'required|string|max:20',
@@ -76,12 +96,12 @@ class LaporanKejadianController extends Controller
             'nama_kapal'          => 'required|string|max:255',
             'nama_kapal_kedua'    => 'nullable|string|max:255',
             'bendera_kapal'       => 'required|string|max:100',
-            'grt_kapal'           => 'required|integer',
+            'grt_kapal'           => 'required|integer|min:0', // Tambah min:0
             'imo_number'          => 'nullable|string|max:100',
             'pelabuhan_asal'      => 'required|string|max:255',
             'waktu_berangkat'     => 'required|date',
             'pelabuhan_tujuan'    => 'required|string|max:255',
-            'estimasi_tiba'       => 'required|date',
+            'estimasi_tiba'       => 'required|date|after_or_equal:waktu_berangkat', // Tambah validasi waktu
             'pemilik_kapal'       => 'required|string|max:255',
             'kontak_pemilik'      => 'required|string|max:20',
             'agen_lokal'          => 'required|string|max:255',
@@ -90,17 +110,22 @@ class LaporanKejadianController extends Controller
             'nomor_register_pandu'=> 'nullable|string|max:255',
             'jenis_muatan'        => 'required|string',
             'jumlah_muatan'       => 'required|string|max:100',
-            'jumlah_penumpang'    => 'required|integer',
-            'posisi_lintang'      => 'required|string|max:50',
-            'posisi_bujur'        => 'required|string|max:50',
+            'jumlah_penumpang'    => 'required|integer|min:0', // Tambah min:0
+            'posisi_lintang'      => 'required|string|max:50', // Mungkin perlu validasi format DMS
+            'posisi_bujur'        => 'required|string|max:50', // Mungkin perlu validasi format DMS
+
+            // --- Data Step 3 ---
+             // 🆕 Validasi field baru
+            'jenis_kecelakaan'    => ['required', 'string', Rule::in($this->jenisKecelakaanOptions)],
+            'pihak_terkait'       => 'nullable|string|max:255|required_if:jenis_kecelakaan,Kecelakaan Antar Kapal (Tabrakan)',
             'tanggal_laporan'     => 'required|date',
             'isi_laporan'         => 'required|string',
             'lampiran.*'          => 'nullable|file|mimes:jpg,jpeg,png,mp4,mov,avi,webm|max:20480', // 20MB
         ]);
+        // 🔼 AKHIR PERUBAHAN VALIDASI 🔼
 
         $dataToStore = $validatedData;
         $dataToStore['user_id'] = auth()->id();
-        // Status default 'dikirim' sudah diatur di migrasi
 
         $laporan = LaporanKejadian::create($dataToStore);
 
@@ -166,7 +191,7 @@ class LaporanKejadianController extends Controller
         // if ($laporan->status_laporan !== 'dikirim') {
         //     return redirect()->route('dashboard')->with('error', 'Laporan tidak bisa diedit lagi.');
         // }
-        return view('laporan.edit', compact('laporan'));
+        return view('laporan.edit', compact('laporan')); // Perlu kirim $jenisKecelakaanOptions jika mau edit dropdown
     }
 
     /**
@@ -175,13 +200,10 @@ class LaporanKejadianController extends Controller
     public function update(Request $request, LaporanKejadian $laporan)
     {
         $this->authorize('update', $laporan);
-        // Pastikan status 'dikirim' untuk bisa update (jika perlu)
-        // if ($laporan->status_laporan !== 'dikirim') {
-        //     return redirect()->route('dashboard')->with('error', 'Laporan tidak bisa diupdate lagi.');
-        // }
 
-        // Validasi sama seperti store, kecuali lampiran
+         // 🔽 PERBARUI VALIDASI DI SINI JUGA 🔽
         $validatedData = $request->validate([
+            // --- Data Step 1 & 2 ---
             'nama_pelapor'        => 'required|string|max:255',
             'jabatan_pelapor'     => 'required|string|max:255',
             'telepon_pelapor'     => 'required|string|max:20',
@@ -189,12 +211,12 @@ class LaporanKejadianController extends Controller
             'nama_kapal'          => 'required|string|max:255',
             'nama_kapal_kedua'    => 'nullable|string|max:255',
             'bendera_kapal'       => 'required|string|max:100',
-            'grt_kapal'           => 'required|integer',
+            'grt_kapal'           => 'required|integer|min:0',
             'imo_number'          => 'nullable|string|max:100',
             'pelabuhan_asal'      => 'required|string|max:255',
             'waktu_berangkat'     => 'required|date',
             'pelabuhan_tujuan'    => 'required|string|max:255',
-            'estimasi_tiba'       => 'required|date',
+            'estimasi_tiba'       => 'required|date|after_or_equal:waktu_berangkat',
             'pemilik_kapal'       => 'required|string|max:255',
             'kontak_pemilik'      => 'required|string|max:20',
             'agen_lokal'          => 'required|string|max:255',
@@ -203,17 +225,21 @@ class LaporanKejadianController extends Controller
             'nomor_register_pandu'=> 'nullable|string|max:255',
             'jenis_muatan'        => 'required|string',
             'jumlah_muatan'       => 'required|string|max:100',
-            'jumlah_penumpang'    => 'required|integer',
+            'jumlah_penumpang'    => 'required|integer|min:0',
             'posisi_lintang'      => 'required|string|max:50',
             'posisi_bujur'        => 'required|string|max:50',
+
+            // --- Data Step 3 ---
+             // 🆕 Validasi field baru
+            'jenis_kecelakaan'    => ['required', 'string', Rule::in($this->jenisKecelakaanOptions)],
+            'pihak_terkait'       => 'nullable|string|max:255|required_if:jenis_kecelakaan,Kecelakaan Antar Kapal (Tabrakan)',
             'tanggal_laporan'     => 'required|date',
             'isi_laporan'         => 'required|string',
-            // Validasi lampiran tidak di sini jika mau pakai logic hapus/tambah terpisah
+            // Lampiran tidak divalidasi di update (biasanya logic terpisah)
         ]);
+        // 🔼 AKHIR PERUBAHAN VALIDASI 🔼
 
         $laporan->update($validatedData);
-
-        // Logic untuk update lampiran bisa ditambahkan di sini jika perlu
 
         return redirect()->route('dashboard')->with('success', 'Laporan berhasil diperbarui!');
     }
@@ -224,15 +250,15 @@ class LaporanKejadianController extends Controller
     public function destroy(LaporanKejadian $laporan)
     {
         $this->authorize('delete', $laporan);
-        
+
         // Hapus file lampiran dari storage sebelum hapus record DB
         $laporan->load('lampiran');
         foreach ($laporan->lampiran as $file) {
              \Illuminate\Support\Facades\Storage::disk('public')->delete($file->path_file);
         }
         // Hapus record lampiran dan laporan (cascade delete di DB akan menghapus lampiran juga)
-        $laporan->delete(); 
-        
+        $laporan->delete();
+
         return redirect()->route('dashboard')->with('success', 'Laporan berhasil dihapus.');
     }
 
@@ -248,7 +274,7 @@ class LaporanKejadianController extends Controller
             \Log::info('Mulai buat PDF untuk Pelapor', ['laporan_id' => $laporan->id]);
 
             // Menggunakan view yang sama dengan admin? Pastikan pathnya benar
-            $pdf = Pdf::loadView('laporan.pdf', ['laporan' => $laporan]); 
+            $pdf = Pdf::loadView('laporan.pdf', ['laporan' => $laporan]);
 
             \Log::info('View PDF berhasil dibaca untuk Pelapor');
 
