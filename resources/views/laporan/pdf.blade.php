@@ -7,7 +7,10 @@
     <title>Laporan Kejadian #{{ str_pad($laporan->id, 6, '0', STR_PAD_LEFT) }}</title>
     <style>
         body {
-            font-family: DejaVu Sans, Helvetica, Arial, sans-serif;
+            /* * Menggunakan Arial/Helvetica sebagai fallback jika DejaVu Sans tidak ada.
+             * Arial lebih umum dan mirip dengan di gambar. 
+            */
+            font-family: Arial, Helvetica, sans-serif;
             font-size: 11px;
             line-height: 1.4;
             color: #333;
@@ -20,33 +23,21 @@
         }
 
         /* ========================================================== */
-        /* ==          INI BAGIAN YANG SAYA KEMBALIKAN (FIXED)       == */
+        /* ==            INI BAGIAN YANG SAYA MODIFIKASI           == */
         /* ========================================================== */
         .header {
-            text-align: left;
-            margin-bottom: 20px;
-            padding-bottom: 5px;
+            width: 100%;
+            margin-bottom: 15px; /* Disesuaikan agar pas dengan <hr> */
         }
 
-        .header h1 {
-            margin: 0;
-            font-size: 16px;
-        }
-
-        .header p {
-            margin: 0;
-            font-size: 12px;
-        }
-
-        .logo {
-            width: 70px;
-            height: auto;
-            margin-bottom: 10px;
-            /* Beri jarak antara logo dan teks di bawahnya */
-        }
-
+        /* CSS ini tidak diperlukan lagi karena styling ada di inline tabel */
+        /*
+         .header h1 { ... }
+         .header p { ... }
+         .logo { ... }
+        */
         /* ========================================================== */
-        /* ==                    AKHIR PERUBAHAN CSS                   == */
+        /* ==               AKHIR PERUBAHAN CSS                    == */
         /* ========================================================== */
 
         .main-table {
@@ -101,39 +92,55 @@
 
 <body>
     <div class="container">
-        {{-- Header --}}
+        {{-- ================================================== --}}
+        {{-- ==      HEADER BARU (ALAMAT DI BAWAH JUDUL)     == --}}
+        {{-- ================================================== --}}
         <div class="header">
             @php
                 // gunakan path absolut dengan prefix file:// agar bisa dibaca oleh DomPDF
-                $logoPath = public_path('images/logo_ksop.png');
+                $logoPath = public_path('images/logo_ksop.png'); // Asumsi logo_ksop.png adalah logo Kemenhub
                 $logoSrc = 'file://' . str_replace('\\', '/', $logoPath);
             @endphp
 
-            <table width="100%" style="border-collapse: collapse; margin-bottom: 10px;">
+            <table width="100%" style="border-collapse: collapse;">
                 <tr>
-                    <!-- Kolom Logo -->
-                    <td width="15%" align="left" style="vertical-align: top;">
-                        @if(file_exists($logoPath))
-                            <img src="{{ $logoSrc }}" alt="Logo KSOP" style="width: 80px; height: auto;">
+                    <td width="15%" style="text-align: center; vertical-align: top;">
+                        @if (file_exists($logoPath))
+                            <img src="{{ $logoSrc }}" alt="Logo" style="width: 80px; height: auto;">
                         @endif
                     </td>
 
-                    <!-- Kolom Teks di Sebelah Kanan -->
-                    <td width="85%" align="left" style="vertical-align: middle;">
-                        <div style="line-height: 1.4;">
-                            <p style="margin: 0; font-weight: bold; font-size: 14pt;">
-                                LAPORAN KECELAKAAN KAPAL
-                            </p>
-                            <p style="margin: 0; font-size: 11pt;">
-                                Sistem Informasi Kecelakaan Kapal – KSOP Kelas I Banjarmasin
-                            </p>
+                    <td width="85%"
+                        style="text-align: center; vertical-align: top; line-height: 1.4; padding-left: 10px;">
+                        
+                        <div style="margin-bottom: 8px;">
+                            <strong style="font-size: 13px; display: block; margin: 0;">
+                                KEMENTERIAN PERHUBUNGAN
+                            </strong>
+                            <strong style="font-size: 13px; display: block; margin: 0;">
+                                DIREKTORAT JENDERAL PERHUBUNGAN LAUT
+                            </strong>
+                            <strong style="font-size: 14px; display: block; margin: 0;">
+                                KANTOR KESYAHBANDARAN DAN OTORITAS PELABUHAN BANJARMASIN
+                            </strong>
                         </div>
+
+                        <div style="font-size: 10px; line-height: 1.3;">
+                            Jl. Duyung Raya, Komplek Lumba-Lumba No. 45, Banjarmasin, 70119<br>
+                            Telepon: (0511) 3352640 - 3354775 | Fax.: 3353734 | email: adpel_bmasin@yahoo.co.id
+                        </div>
+
                     </td>
                 </tr>
             </table>
 
-            <hr style="border: 1px solid #000; margin-top: 5px;">
+            <hr style="border: 0; border-top: 3px solid #000; margin-top: 10px;">
         </div>
+        {{-- ================================================== --}}
+        {{-- ==             AKHIR MODIFIKASI HEADER          == --}}
+        {{-- ================================================== --}}
+
+
         {{-- Isi Tabel Utama --}}
         <table class="main-table">
             <tr>
