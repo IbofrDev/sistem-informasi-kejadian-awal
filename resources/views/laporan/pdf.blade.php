@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,10 +23,9 @@
         /* ==          INI BAGIAN YANG SAYA KEMBALIKAN (FIXED)       == */
         /* ========================================================== */
         .header {
-            text-align: center; /* Teks kembali ke tengah */
+            text-align: left;
             margin-bottom: 20px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
+            padding-bottom: 5px;
         }
 
         .header h1 {
@@ -41,8 +41,10 @@
         .logo {
             width: 70px;
             height: auto;
-            margin-bottom: 10px; /* Beri jarak antara logo dan teks di bawahnya */
+            margin-bottom: 10px;
+            /* Beri jarak antara logo dan teks di bawahnya */
         }
+
         /* ========================================================== */
         /* ==                    AKHIR PERUBAHAN CSS                   == */
         /* ========================================================== */
@@ -102,14 +104,35 @@
         {{-- Header --}}
         <div class="header">
             @php
+                // gunakan path absolut dengan prefix file:// agar bisa dibaca oleh DomPDF
                 $logoPath = public_path('images/logo_ksop.png');
+                $logoSrc = 'file://' . str_replace('\\', '/', $logoPath);
             @endphp
-            @if(file_exists($logoPath))
-                <img src="{{ $logoPath }}" alt="Logo KSOP" class="logo">
-            @endif
-            {{-- Teks kembali diletakkan di bawah logo --}}
-            <h1>LAPORAN KECELAKAAN KAPAL</h1>
-            <p>Sistem Informasi Kecelakaan Kapal - KSOP Kelas I Banjarmasin</p>
+
+            <table width="100%" style="border-collapse: collapse; margin-bottom: 10px;">
+                <tr>
+                    <!-- Kolom Logo -->
+                    <td width="15%" align="left" style="vertical-align: top;">
+                        @if(file_exists($logoPath))
+                            <img src="{{ $logoSrc }}" alt="Logo KSOP" style="width: 80px; height: auto;">
+                        @endif
+                    </td>
+
+                    <!-- Kolom Teks di Sebelah Kanan -->
+                    <td width="85%" align="left" style="vertical-align: middle;">
+                        <div style="line-height: 1.4;">
+                            <p style="margin: 0; font-weight: bold; font-size: 14pt;">
+                                LAPORAN KECELAKAAN KAPAL
+                            </p>
+                            <p style="margin: 0; font-size: 11pt;">
+                                Sistem Informasi Kecelakaan Kapal – KSOP Kelas I Banjarmasin
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <hr style="border: 1px solid #000; margin-top: 5px;">
         </div>
         {{-- Isi Tabel Utama --}}
         <table class="main-table">
@@ -187,4 +210,5 @@
         </div>
     </div>
 </body>
+
 </html>

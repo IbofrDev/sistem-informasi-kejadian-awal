@@ -1,0 +1,13 @@
+[33mcommit 41a56bb418a2611e909dc0ff4171c313efbabf8f[m
+Author: riosptr <riroriri202004@gmail.com>
+Date:   Tue Oct 28 11:12:38 2025 +0800
+
+    revisi notifikasi
+
+app/Http/Controllers/Admin/DashboardController.php
+app/Http/Controllers/Api/AdminController.php
+app/Models/Lampiran.php
+app/Models/LaporanKejadian.php
+database/migrations/2025_10_27_022318_add_jenis_kecelakaan_dan_pihak_terkait_to_laporan_kejadian_table--table=laporan_kejadian.php
+database/migrations/2025_10_28_092230_add_jenis_kecelakaan_dan_pihak_terkait_to_laporan_kejadian_table--table=laporan_kejadian.php
+resources/views/admin/dashboard.blade.php
